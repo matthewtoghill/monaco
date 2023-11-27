@@ -108,6 +108,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 	app.UseDeveloperExceptionPage();
+else
+	app.UseGlobalErrorHandler();
 
 #if (disableAuth)
 app.UseSwaggerConfiguration();
