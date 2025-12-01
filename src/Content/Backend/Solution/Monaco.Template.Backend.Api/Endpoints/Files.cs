@@ -19,7 +19,7 @@ internal static class Files
 
 		files.MapPost("",
 					  Task<Results<Created<Guid>, NotFound, ValidationProblem>> ([FromServices] ISender sender,
-																				 [FromForm] IFormFile file,
+																				 IFormFile file,
 																				 HttpContext context) =>
 						  sender.ExecuteCommandAsync(new CreateFile.Command(file.OpenReadStream(),
 																			file.FileName,
