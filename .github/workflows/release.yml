@@ -3,7 +3,7 @@ name: Release to NuGet
 on:
   release:
     types: [published]
-    
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,7 +14,7 @@ jobs:
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 9.x
+        dotnet-version: 10.x
     - name: Install Mono
       run: |
         sudo apt-get update
