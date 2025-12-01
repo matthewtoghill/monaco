@@ -3,7 +3,7 @@ using Asp.Versioning.ApiExplorer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Monaco.Template.Backend.Common.Api.Swagger;
@@ -77,7 +77,7 @@ public static class ConfigureSwaggerExtensions
 
 								   if (authEndpoint is not null && tokenEndpoint is not null && apiName is not null && scopesList is not null)
 								   {
-									   //Add security for authenticated APIs
+									   // Add security for authenticated APIs
 									   options.AddSecurityDefinition("oauth2",
 																	 new OpenApiSecurityScheme
 																	 {

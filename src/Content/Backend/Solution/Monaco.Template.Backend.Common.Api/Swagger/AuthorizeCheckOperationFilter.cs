@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Net;
 
@@ -22,22 +22,18 @@ public class AuthorizeCheckOperationFilter : IOperationFilter
 				   .Any(m => m is IAllowAnonymous))
 			return;
 
-		if (!operation.Responses.ContainsKey(((int)HttpStatusCode.Unauthorized).ToString()))
-			operation.Responses.Add(((int)HttpStatusCode.Unauthorized).ToString(),
-									new OpenApiResponse { Description = HttpStatusCode.Unauthorized.ToString() });
-		if (!operation.Responses.ContainsKey(((int)HttpStatusCode.Forbidden).ToString()))
-			operation.Responses.Add(((int)HttpStatusCode.Forbidden).ToString(),
-									new OpenApiResponse { Description = HttpStatusCode.Forbidden.ToString() });
+		operation.Responses ??= [];
 
-		var oAuthScheme = new OpenApiSecurityScheme
-						  {
-							  Reference = new OpenApiReference
-										  {
-											  Id = "oauth2",
-											  Type = ReferenceType.SecurityScheme
-										  }
-						  };
+		var unauthorizedKey = ((int)HttpStatusCode.Unauthorized).ToString();
+		if (!operation.Responses.ContainsKey(unauthorizedKey))
+			operation.Responses.Add(unauthorizedKey, new OpenApiResponse { Description = HttpStatusCode.Unauthorized.ToString() });
 
-		operation.Security = [new OpenApiSecurityRequirement { [oAuthScheme] = new List<string> { _audience } }];
+		var forbiddenKey = ((int)HttpStatusCode.Forbidden).ToString();
+		if (!operation.Responses.ContainsKey(forbiddenKey))
+			operation.Responses.Add(forbiddenKey, new OpenApiResponse { Description = HttpStatusCode.Forbidden.ToString() });
+
+		var oAuthScheme = new OpenApiSecuritySchemeReference("oauth2", context.Document);
+
+		operation.Security = [new OpenApiSecurityRequirement { [oAuthScheme] = [_audience] }];
 	}
 }

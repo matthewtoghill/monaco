@@ -42,7 +42,6 @@ public static class MinimalApiExtensions
 											 string description) =>
 		builder.MapGet(pattern,
 					   handler)
-			   .WithOpenApi()
 			   .WithName(name)
 			   .WithSummary(summary)
 			   .WithDescription(description);
@@ -66,7 +65,6 @@ public static class MinimalApiExtensions
 											  string description) =>
 		builder.MapPost(pattern,
 						handler)
-			   .WithOpenApi()
 			   .WithName(name)
 			   .WithSummary(summary)
 			   .WithDescription(description);
@@ -90,7 +88,6 @@ public static class MinimalApiExtensions
 											 string description) =>
 		builder.MapPut(pattern,
 					   handler)
-			   .WithOpenApi()
 			   .WithName(name)
 			   .WithSummary(summary)
 			   .WithDescription(description);
@@ -114,7 +111,6 @@ public static class MinimalApiExtensions
 												string description) =>
 		builder.MapDelete(pattern,
 						  handler)
-			   .WithOpenApi()
 			   .WithName(name)
 			   .WithSummary(summary)
 			   .WithDescription(description);

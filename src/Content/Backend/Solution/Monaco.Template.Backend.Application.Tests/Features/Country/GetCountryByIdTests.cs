@@ -37,7 +37,7 @@ public class GetCountryByIdTests
 	[Fact(DisplayName = "Get non-existing country by Id fails")]
 	public async Task GetNonExistingCountryByIdFails()
 	{
-		_dbContextMock.CreateAndSetupDbSetMock(CountryFactory.CreateMany());
+		_dbContextMock.CreateAndSetupDbSetMock(CountryFactory.CreateMany().ToList());
 		var query = new GetCountryById.Query(Guid.NewGuid());
 
 		var sut = new GetCountryById.Handler(_dbContextMock.Object);

@@ -37,7 +37,7 @@ public class GetCompanyByIdTests
 	[Fact(DisplayName = "Get non-existing company by Id fails")]
 	public async Task GetNonExistingCompanyByIdFails()
 	{
-		_dbContextMock.CreateAndSetupDbSetMock(CompanyFactory.CreateMany());
+		_dbContextMock.CreateAndSetupDbSetMock(CompanyFactory.CreateMany().ToList());
 
 		var query = new GetCompanyById.Query(Guid.NewGuid());
 
