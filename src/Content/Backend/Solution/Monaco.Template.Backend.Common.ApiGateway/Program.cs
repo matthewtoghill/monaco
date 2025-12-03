@@ -11,7 +11,7 @@ builder.Host.UseSerilog((context, config) => config.ReadFrom.Configuration(conte
 // Add services to the container.
 var configuration = builder.Configuration;
 builder.Services
-	   .AddAuthorization(cfg => Scopes.List.ForEach(s => cfg.AddPolicy(s, p => p.RequireScope(s)))) //Register all listed scopes as policies requiring the existance of such scope in User claims
+	   .AddAuthorization(cfg => Scopes.List.ForEach(s => cfg.AddPolicy(s, p => p.RequireScope(s)))) // Register all listed scopes as policies requiring the existence of such scope in User claims
 	   .AddJwtBearerAuthentication(configuration["SSO:Authority"]!,
 								   configuration["SSO:Audience"]!,
 								   bool.Parse(configuration["SSO:RequireHttpsMetadata"] ?? "false"));

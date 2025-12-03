@@ -25,7 +25,7 @@ public static class PagingExtensions
 				   limit,
 				   results.FirstOrDefault()?.TotalCount ?? 0);
 	}
-	
+
 	public static async Task<Page<TResult>> ToPageAsync<T, TKey, TResult>(this IQueryable<T> query,
 																		  int offset,
 																		  int limit,

@@ -15,7 +15,7 @@ namespace Monaco.Template.Backend.Common.Application.Queries;
 public abstract record QueryBase<T>(IEnumerable<KeyValuePair<string, StringValues>> QueryParams) : IRequest<T>
 {
 	private const string ExpandParam = "expand";
-	
+
 	public virtual IEnumerable<KeyValuePair<string, StringValues>> QueryParams { get; } = QueryParams;
 	public virtual string?[] Sort => [.. QueryParams.FirstOrDefault(x => x.Key == "sort").Value];
 

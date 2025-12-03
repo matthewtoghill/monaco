@@ -39,8 +39,7 @@ public record AuditEntry
 																	.FindPrimaryKey()?
 																	.Properties
 																	.ToDictionary(p => p.Name,
-																				  p => _entityEntry.Property(p.Name).CurrentValue) ??
-														new Dictionary<string, object?>();
+																				  p => _entityEntry.Property(p.Name).CurrentValue) ?? [];
 
 	private readonly Dictionary<string, PropertyValues> _propertiesValues;
 	public IReadOnlyDictionary<string, PropertyValues> PropertiesValues => _propertiesValues;

@@ -45,7 +45,7 @@ public static class SelectMapExtensions
 		await source.Where(predicate)
 					.Select(selector)
 					.SingleOrDefaultAsync(cancellationToken);
-	
+
 	public static async Task<TDto?> FirstOrDefaultAsync<T, TDto>(this IQueryable<T> source,
 																 Expression<Func<T, bool>> predicate,
 																 Expression<Func<T, TDto>> selector,

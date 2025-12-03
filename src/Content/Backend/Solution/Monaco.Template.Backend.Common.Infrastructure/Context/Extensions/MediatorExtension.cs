@@ -24,7 +24,7 @@ public static class MediatorExtension
 			foreach (var domainEvent in domainEvents)
 				await publisher.Publish(domainEvent);
 
-			//If event handlers produced more domain events, keep processing them until there's no more
+			// If event handlers produced more domain events, keep processing them until there's no more
 			if (ctx.ChangeTracker
 				   .Entries<AggregateRoot>()
 				   .Any(x => x.Entity

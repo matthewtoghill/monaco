@@ -63,7 +63,7 @@ public record CommandResult(ValidationResult ValidationResult, bool ItemNotFound
 	/// <returns>A <see cref="CommandResult"/> with a "Not Found" status and an empty list of validation errors/>.</returns>
 	public static CommandResult NotFound() =>
 		new(new(), true);
-	
+
 	/// <summary>
 	/// Creates a <see cref="CommandResult"/> instance representing a failed validation.
 	/// </summary>

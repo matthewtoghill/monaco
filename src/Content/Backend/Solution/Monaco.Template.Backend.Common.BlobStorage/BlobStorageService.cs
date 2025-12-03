@@ -23,7 +23,7 @@ public class BlobStorageService : IBlobStorageService
 		await blobClient.UploadAsync(stream, null, metadata, cancellationToken: cancellationToken);
 		return id;
 	}
-	
+
 	public async Task<Stream> DownloadAsync(Guid fileName, string path = "", CancellationToken cancellationToken = default)
 	{
 		var blobName = GetBlobName(fileName.ToString(), path);

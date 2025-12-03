@@ -14,8 +14,9 @@ public static class SortingExtensions
 		var (sortMapLower, lstSort) = GetData(sortFields, defaultSortField, sortMap);
 
 		var query = source.AsQueryable();
-		foreach (var (key, value) in lstSort) //Loop through the fields and apply the sorting
+		foreach (var (key, value) in lstSort) // Loop through the fields and apply the sorting
 			query = query.GetOrderedQuery(sortMapLower[key], value, key == lstSort.Keys.First());
+
 		return query;
 	}
 
@@ -29,17 +30,18 @@ public static class SortingExtensions
 		var (sortMapLower, lstSort) = GetData(sortFields, defaultSortField, sortMap);
 
 		var query = source.AsEnumerable();
-		foreach (var (key, value) in lstSort) //Loop through the fields and apply the sorting
+		foreach (var (key, value) in lstSort) // Loop through the fields and apply the sorting
 			query = query.GetOrderedQuery(sortMapLower[key], value, key == lstSort.Keys.First());
+
 		return query;
 	}
 
 	public static (Dictionary<string, Expression<Func<T, object>>> sortMapLower, Dictionary<string, bool> lstSort)
 		GetData<T>(IEnumerable<string?> sortFields, string defaultSortField, Dictionary<string, Expression<Func<T, object>>> sortMap)
 	{
-		//convert a Dictionary with Keys into lowercase to ease searching
+		// convert a Dictionary with Keys into lowercase to ease searching
 		var sortMapLower = sortMap.ToDictionary(x => x.Key.ToLower(), x => x.Value);
-		//convert the list of fields to sort into a dictionary field/direction and filter out the non-existing ones
+		// convert the list of fields to sort into a dictionary field/direction and filter out the non-existing ones
 		var lstSort = ProcessSortParam(sortFields, sortMapLower);
 		if (lstSort.Count == 0) //if there's none remaining, load the default ones
 			lstSort = ProcessSortParam([defaultSortField], sortMapLower);
@@ -51,13 +53,14 @@ public static class SortingExtensions
 	{
 		var bodyExpression = (MemberExpression)(expression.Body.NodeType == ExpressionType.Convert ? ((UnaryExpression)expression.Body).Operand : expression.Body);
 		var sortLambda = Expression.Lambda(bodyExpression, expression.Parameters);
+
 		Expression<Func<IOrderedQueryable<T>>> sortMethod = firstSort
-																? ascending
-																	  ? () => source.OrderBy<T, object>(k => null!)
-																	  : () => source.OrderByDescending<T, object>(k => null!)
-																: ascending
-																	? () => ((IOrderedQueryable<T>)source).ThenBy<T, object>(k => null!)
-																	: () => ((IOrderedQueryable<T>)source).ThenByDescending<T, object>(k => null!);
+			? ascending
+				? () => source.OrderBy<T, object>(k => null!)
+				: () => source.OrderByDescending<T, object>(k => null!)
+			: ascending
+				? () => ((IOrderedQueryable<T>)source).ThenBy<T, object>(k => null!)
+				: () => ((IOrderedQueryable<T>)source).ThenByDescending<T, object>(k => null!);
 
 		var methodCallExpression = (MethodCallExpression)sortMethod.Body;
 		var method = methodCallExpression.Method.GetGenericMethodDefinition();
@@ -69,13 +72,15 @@ public static class SortingExtensions
 	{
 		var bodyExpression = (MemberExpression)(expression.Body.NodeType == ExpressionType.Convert ? ((UnaryExpression)expression.Body).Operand : expression.Body);
 		var sortLambda = Expression.Lambda(bodyExpression, expression.Parameters);
+
 		Expression<Func<IOrderedEnumerable<T>>> sortMethod = firstSort
-																 ? ascending
-																	   ? () => source.OrderBy<T, object>(k => null!)
-																	   : () => source.OrderByDescending<T, object>(k => null!)
-																 : ascending
-																	 ? () => ((IOrderedEnumerable<T>)source).ThenBy<T, object>(k => null!)
-																	 : () => ((IOrderedEnumerable<T>)source).ThenByDescending<T, object>(k => null!);
+			? ascending
+				? () => source.OrderBy<T, object>(k => null!)
+				: () => source.OrderByDescending<T, object>(k => null!)
+			: ascending
+				? () => ((IOrderedEnumerable<T>)source).ThenBy<T, object>(k => null!)
+				: () => ((IOrderedEnumerable<T>)source).ThenByDescending<T, object>(k => null!);
+
 		if (sortMethod.Body is not MethodCallExpression methodCallExpression)
 			throw new Exception("oops");
 
