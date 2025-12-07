@@ -1,79 +1,79 @@
 <Project>
-	<PropertyGroup>
-		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-	</PropertyGroup>
-	<ItemGroup>
-		<PackageVersion Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
-		<PackageVersion Include="AspNetCore.HealthChecks.Uris" Version="9.0.0" />
-		<PackageVersion Include="DelegateDecompiler.EntityFrameworkCore5" Version="0.35.3" />
-		<PackageVersion Include="FluentValidation" Version="12.1.0" />
-		<PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.0" />
-		<PackageVersion Include="Flurl.Http" Version="4.0.2" />
-		<PackageVersion Include="LinqKit.Microsoft.EntityFrameworkCore" Version="10.0.9" />
-		<PackageVersion Include="MediatR" Version="12.5.0" />
-		<PackageVersion Include="MediatR.Contracts" Version="2.0.1" />
-		<PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
-		<PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.0" />
-		<PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
-		<PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0" />
-		<PackageVersion Include="Microsoft.EntityFrameworkCore.Proxies" Version="10.0.0" />
-		<PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
-		<PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.0" />
-		<PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
-		<PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.0" />
-		<PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
-		<PackageVersion Include="Polly.Core" Version="8.6.5" />
-		<PackageVersion Include="Polly.Extensions" Version="8.6.5" />
-		<PackageVersion Include="Serilog" Version="4.3.0" />
-		<PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
-		<PackageVersion Include="Serilog.Extensions.Hosting" Version="10.0.0" />
-		<PackageVersion Include="Serilog.Settings.Configuration" Version="10.0.0" />
-		<PackageVersion Include="Serilog.Sinks.ApplicationInsights" Version="4.1.0" />
-		<PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
-		<PackageVersion Include="Serilog.Sinks.Debug" Version="3.0.0" />
-		<PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
-		<PackageVersion Include="Swashbuckle.AspNetCore" Version="10.0.1" />
-		<PackageVersion Include="Throw" Version="1.4.0" />
-		<!--#if (apiGateway)-->
-		<PackageVersion Include="Yarp.ReverseProxy" Version="2.3.0" />
-		<!--#endif-->
-		<!--#if (auth)-->
-		<PackageVersion Include="Keycloak.Net.Core" Version="1.0.38" />
-		<PackageVersion Include="Testcontainers.Keycloak" Version="4.9.0" />
-		<!--#endif-->
-		<!--#if (filesSupport)-->
-		<PackageVersion Include="AsyncEnumerator" Version="4.0.2" />
-		<PackageVersion Include="Azure.Storage.Blobs" Version="12.26.0" />
-		<PackageVersion Include="ExifLibNet" Version="2.1.4" />
-		<PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.0" />
-		<PackageVersion Include="SkiaSharp" Version="3.119.1" />
-		<PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.1" />
-		<!--#if (tests)-->
-		<PackageVersion Include="Testcontainers.Azurite" Version="4.9.0" />
-		<!--#endif-->
-		<!--#endif-->
-		<!--#if (massTransitIntegration)-->
-		<PackageVersion Include="MassTransit" Version="8.5.7" />
-		<PackageVersion Include="MassTransit.Azure.ServiceBus.Core" Version="8.5.7" />
-		<PackageVersion Include="MassTransit.EntityFrameworkCore" Version="8.5.7" />
-		<PackageVersion Include="MassTransit.RabbitMQ" Version="8.5.7" />
-		<!--#if (tests)-->
-		<PackageVersion Include="Testcontainers.RabbitMq" Version="4.9.0" />
-		<!--#endif-->
-		<!--#endif-->
-		<!--#if (tests)-->
-		<PackageVersion Include="AutoFixture.AutoMoq" Version="4.18.1" />
-		<PackageVersion Include="AutoFixture.Xunit2" Version="4.18.1" />
-		<PackageVersion Include="coverlet.collector" Version="6.0.4" />
-		<PackageVersion Include="AwesomeAssertions" Version="9.3.0" />
-		<PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
-		<PackageVersion Include="MockQueryable.Moq" Version="10.0.1" />
-		<PackageVersion Include="Moq" Version="4.20.72" />
-		<PackageVersion Include="Testcontainers" Version="4.9.0" />
-		<PackageVersion Include="Testcontainers.MsSql" Version="4.9.0" />
-		<PackageVersion Include="TngTech.ArchUnitNET.xUnit" Version="0.12.3" />
-		<PackageVersion Include="xunit" Version="2.9.3" />
-		<PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
-		<!--#endif-->
-	</ItemGroup>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
+    <PackageVersion Include="AspNetCore.HealthChecks.Uris" Version="9.0.0" />
+    <PackageVersion Include="DelegateDecompiler.EntityFrameworkCore5" Version="0.35.3" />
+    <PackageVersion Include="FluentValidation" Version="12.1.1" />
+    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageVersion Include="Flurl.Http" Version="4.0.2" />
+    <PackageVersion Include="LinqKit.Microsoft.EntityFrameworkCore" Version="10.0.9" />
+    <PackageVersion Include="MediatR" Version="12.5.0" />
+    <PackageVersion Include="MediatR.Contracts" Version="2.0.1" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Proxies" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
+    <PackageVersion Include="Polly.Core" Version="8.6.5" />
+    <PackageVersion Include="Polly.Extensions" Version="8.6.5" />
+    <PackageVersion Include="Serilog" Version="4.3.0" />
+    <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageVersion Include="Serilog.Extensions.Hosting" Version="10.0.0" />
+    <PackageVersion Include="Serilog.Settings.Configuration" Version="10.0.0" />
+    <PackageVersion Include="Serilog.Sinks.ApplicationInsights" Version="4.1.0" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageVersion Include="Serilog.Sinks.Debug" Version="3.0.0" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.0.1" />
+    <PackageVersion Include="Throw" Version="1.4.0" />
+    <!--#if (apiGateway)-->
+    <PackageVersion Include="Yarp.ReverseProxy" Version="2.3.0" />
+    <!--#endif-->
+    <!--#if (auth)-->
+    <PackageVersion Include="Keycloak.Net.Core" Version="1.0.38" />
+    <PackageVersion Include="Testcontainers.Keycloak" Version="4.9.0" />
+    <!--#endif-->
+    <!--#if (filesSupport)-->
+    <PackageVersion Include="AsyncEnumerator" Version="4.0.2" />
+    <PackageVersion Include="Azure.Storage.Blobs" Version="12.26.0" />
+    <PackageVersion Include="ExifLibNet" Version="2.1.4" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.0" />
+    <PackageVersion Include="SkiaSharp" Version="3.119.1" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.119.1" />
+    <!--#if (tests)-->
+    <PackageVersion Include="Testcontainers.Azurite" Version="4.9.0" />
+    <!--#endif-->
+    <!--#endif-->
+    <!--#if (massTransitIntegration)-->
+    <PackageVersion Include="MassTransit" Version="8.5.7" />
+    <PackageVersion Include="MassTransit.Azure.ServiceBus.Core" Version="8.5.7" />
+    <PackageVersion Include="MassTransit.EntityFrameworkCore" Version="8.5.7" />
+    <PackageVersion Include="MassTransit.RabbitMQ" Version="8.5.7" />
+    <!--#if (tests)-->
+    <PackageVersion Include="Testcontainers.RabbitMq" Version="4.9.0" />
+    <!--#endif-->
+    <!--#endif-->
+    <!--#if (tests)-->
+    <PackageVersion Include="AutoFixture.AutoMoq" Version="4.18.1" />
+    <PackageVersion Include="AutoFixture.Xunit2" Version="4.18.1" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="AwesomeAssertions" Version="9.3.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageVersion Include="MockQueryable.Moq" Version="10.0.1" />
+    <PackageVersion Include="Moq" Version="4.20.72" />
+    <PackageVersion Include="Testcontainers" Version="4.9.0" />
+    <PackageVersion Include="Testcontainers.MsSql" Version="4.9.0" />
+    <PackageVersion Include="TngTech.ArchUnitNET.xUnit" Version="0.13.0" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <!--#endif-->
+  </ItemGroup>
 </Project>
