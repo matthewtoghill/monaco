@@ -5,7 +5,10 @@ namespace Monaco.Template.Backend.Application.ResiliencePipelines;
 
 public static class ResiliencePipelinesExtensions
 {
-	public static IServiceCollection AddResiliencePipelines(this IServiceCollection services) =>
-		// Register additional pipelines chained below
-		CommonResiliencePipelinesExtensions.AddResiliencePipelines(services);
+	extension(IServiceCollection services)
+	{
+		public IServiceCollection AddResiliencePipelines() =>
+			// Register additional pipelines chained below
+			CommonResiliencePipelinesExtensions.AddResiliencePipelines(services);
+	}
 }

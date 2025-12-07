@@ -14,31 +14,61 @@ namespace Monaco.Template.Backend.Application.Features.Product.Extensions;
 
 public static class ProductExtensions
 {
-	public static ProductDto? Map(this Domain.Model.Entities.Product? value,
-								  bool expandCompany = false,
-								  bool expandPictures = false,
-								  bool expandDefaultPicture = false) =>
-		value is null
-			? null
-			: new(value.Id,
-				  value.Title,
-				  value.Description,
-				  value.Price,
-				  value.CompanyId,
-				  expandCompany
-					  ? value.Company
-							 .Map()
-					  : null,
-				  expandPictures
-					  ? value.Pictures
-							 .Select(x => x.Map()!)
-							 .ToArray()
-					  : null,
-				  value.DefaultPictureId,
-				  expandDefaultPicture
-					  ? value.DefaultPicture
-							 .Map()
-					  : null);
+	extension(Domain.Model.Entities.Product? value)
+	{
+		public ProductDto? Map(bool expandCompany = false,
+							   bool expandPictures = false,
+							   bool expandDefaultPicture = false) =>
+			value is null
+				? null
+				: new(value.Id,
+					  value.Title,
+					  value.Description,
+					  value.Price,
+					  value.CompanyId,
+					  expandCompany
+						  ? value.Company
+								 .Map()
+						  : null,
+					  expandPictures
+						  ? value.Pictures
+								 .Select(x => x.Map()!)
+								 .ToArray()
+						  : null,
+					  value.DefaultPictureId,
+					  expandDefaultPicture
+						  ? value.DefaultPicture
+								 .Map()
+						  : null);
+	}
+#if (massTransitIntegration)
+	
+	extension(Domain.Model.Entities.Product item)
+	{
+		internal ProductCreated MapMessage() =>
+			new(item.Id,
+				item.Title,
+				item.Description,
+				item.Price,
+				item.CompanyId);
+	}
+#endif
+
+	extension(AppDbContext dbContext)
+	{
+		internal async Task<(Domain.Model.Entities.Company company , Image[] pics)> GetProductData(Guid companyId,
+																								   Guid[] pictures,
+																								   CancellationToken cancellationToken)
+		{
+			var company = await dbContext.Set<Domain.Model.Entities.Company>()
+										 .SingleAsync(x => x.Id == companyId, cancellationToken);
+			var pics = await dbContext.Set<Image>()
+									  .Include(x => x.Thumbnail)
+									  .Where(x => ((IEnumerable<Guid>)pictures).Contains(x.Id))
+									  .ToArrayAsync(cancellationToken);
+			return (company, pics);
+		}
+	}
 
 	public static Dictionary<string, Expression<Func<Domain.Model.Entities.Product, object>>> GetMappedFields() =>
 		new()
@@ -51,27 +81,4 @@ public static class ProductExtensions
 			[$"{nameof(ProductDto.Company)}.{nameof(CompanyDto.Name)}"] = x => x.Company.Name,
 			[nameof(ProductDto.DefaultPictureId)] = x => x.DefaultPictureId
 		};
-
-	internal static async Task<(Domain.Model.Entities.Company company , Image[] pics)> GetProductData(this AppDbContext dbContext,
-																									  Guid companyId,
-																									  Guid[] pictures,
-																									  CancellationToken cancellationToken)
-	{
-		var company = await dbContext.Set<Domain.Model.Entities.Company>()
-									 .SingleAsync(x => x.Id == companyId, cancellationToken);
-		var pics = await dbContext.Set<Image>()
-								  .Include(x => x.Thumbnail)
-								  .Where(x => pictures.Contains(x.Id))
-								  .ToArrayAsync(cancellationToken);
-		return (company, pics);
-	}
-#if (massTransitIntegration)
-
-	internal static ProductCreated MapMessage(this Domain.Model.Entities.Product item) =>
-		new(item.Id,
-			item.Title,
-			item.Description,
-			item.Price,
-			item.CompanyId);
-#endif
 }

@@ -30,11 +30,11 @@ public class ConcurrencyExceptionBehavior<TCommand> : IPipelineBehavior<TCommand
 	public async Task<CommandResult> Handle(TCommand request,
 											RequestHandlerDelegate<CommandResult> next,
 											CancellationToken cancellationToken) =>
-		await _dbConcurrentRetryPipeline.ExecuteAsync(async _ =>
+		await _dbConcurrentRetryPipeline.ExecuteAsync(async ct =>
 													  {
 														  try
 														  {
-															  return await next();
+															  return await next(ct);
 														  }
 														  catch (DbUpdateConcurrencyException)
 														  {
@@ -69,11 +69,11 @@ public class ConcurrencyExceptionBehavior<TCommand, TResult> : IPipelineBehavior
 	public async Task<CommandResult<TResult?>> Handle(TCommand request,
 													  RequestHandlerDelegate<CommandResult<TResult?>> next,
 													  CancellationToken cancellationToken) =>
-		await _dbConcurrentRetryPipeline.ExecuteAsync(async _ =>
+		await _dbConcurrentRetryPipeline.ExecuteAsync(async ct =>
 													  {
 														  try
 														  {
-															  return await next();
+															  return await next(ct);
 														  }
 														  catch (DbUpdateConcurrencyException)
 														  {

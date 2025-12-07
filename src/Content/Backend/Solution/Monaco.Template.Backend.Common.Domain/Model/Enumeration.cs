@@ -27,7 +27,8 @@ public abstract class Enumeration : Entity, IComparable
 
 	public static IEnumerable<T> GetAll<T>() where T : Enumeration =>
 		typeof(T).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
-				 .Select(f => f.GetValue(null)).Cast<T>();
+				 .Select(f => f.GetValue(null))
+				 .Cast<T>();
 
 	public override int GetHashCode() =>
 		Id.GetHashCode();

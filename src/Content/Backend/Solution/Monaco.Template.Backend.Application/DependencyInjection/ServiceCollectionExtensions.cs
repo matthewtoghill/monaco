@@ -19,43 +19,44 @@ namespace Monaco.Template.Backend.Application.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-	/// <summary>
-	/// Registers and configures all the services and dependencies of the Application
-	/// </summary>
-	/// <param name="services"></param>
-	/// <param name="options"></param>
-	/// <returns></returns>
-	public static IServiceCollection ConfigureApplication(this IServiceCollection services,
-														  Action<ApplicationOptions> options)
+	extension(IServiceCollection services)
 	{
-		var optionsValue = new ApplicationOptions();
-		options.Invoke(optionsValue);
-		services.AddResiliencePipelines()
-				.AddMediatR(config => config.RegisterServicesFromAssemblies(GetApplicationAssembly()))
-				.RegisterCommandConcurrencyExceptionBehaviors(GetApplicationAssembly())
-				.RegisterCommandValidationBehaviors(GetApplicationAssembly())
-				.AddValidatorsFromAssembly(GetApplicationAssembly(),
-										   filter: filter => !filter.ValidatorType
-																	.GetInterfaces()
-																	.Contains(typeof(INonInjectable)) &&
-															 !filter.ValidatorType.IsAbstract,
-										   includeInternalTypes: true)
-				.AddDbContext<AppDbContext>(opts => opts.UseSqlServer(optionsValue.EntityFramework.ConnectionString,
-																	  sqlOptions => sqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(3), null))
-														.UseLazyLoadingProxies()
-														.EnableSensitiveDataLogging(optionsValue.EntityFramework.EnableEfSensitiveLogging))
-				.AddScoped<BaseDbContext, AppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
-		#if (filesSupport)
-		services.RegisterBlobStorageService(opts =>
-											{
-												opts.ConnectionString = optionsValue.BlobStorage.ConnectionString;
-												opts.ContainerName = optionsValue.BlobStorage.ContainerName;
-											})
-				.AddScoped<IFileService, FileService>();
-		#endif
+		/// <summary>
+		/// Registers and configures all the services and dependencies of the Application
+		/// </summary>
+		/// <param name="options"></param>
+		/// <returns></returns>
+		public IServiceCollection ConfigureApplication(Action<ApplicationOptions> options)
+		{
+			var optionsValue = new ApplicationOptions();
+			options.Invoke(optionsValue);
+			services.AddResiliencePipelines()
+					.AddMediatR(config => config.RegisterServicesFromAssemblies(GetApplicationAssembly()))
+					.RegisterCommandConcurrencyExceptionBehaviors(GetApplicationAssembly())
+					.RegisterCommandValidationBehaviors(GetApplicationAssembly())
+					.AddValidatorsFromAssembly(GetApplicationAssembly(),
+											   filter: filter => !filter.ValidatorType
+																		.GetInterfaces()
+																		.Contains(typeof(INonInjectable)) &&
+																 !filter.ValidatorType.IsAbstract,
+											   includeInternalTypes: true)
+					.AddDbContext<AppDbContext>(opts => opts.UseSqlServer(optionsValue.EntityFramework.ConnectionString,
+																		  sqlOptions => sqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(3), null))
+															.UseLazyLoadingProxies()
+															.EnableSensitiveDataLogging(optionsValue.EntityFramework.EnableEfSensitiveLogging))
+					.AddScoped<BaseDbContext, AppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
+#if (filesSupport)
+			services.RegisterBlobStorageService(opts =>
+												{
+													opts.ConnectionString = optionsValue.BlobStorage.ConnectionString;
+													opts.ContainerName = optionsValue.BlobStorage.ContainerName;
+												})
+					.AddScoped<IFileService, FileService>();
+#endif
 
-		return services;
+			return services;
+		}
+
+		private static Assembly GetApplicationAssembly() => Assembly.GetAssembly(typeof(ServiceCollectionExtensions))!;
 	}
-
-	private static Assembly GetApplicationAssembly() => Assembly.GetAssembly(typeof(ServiceCollectionExtensions))!;
 }

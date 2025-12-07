@@ -4,20 +4,23 @@ namespace Monaco.Template.Backend.Api.DTOs.Extensions;
 
 internal static class ProductExtensions
 {
-	public static CreateProduct.Command Map(this ProductCreateEditDto value) =>
-		new(value.Title,
-			value.Description,
-			value.Price,
-			value.CompanyId,
-			value.Pictures,
-			value.DefaultPictureId);
+	extension(ProductCreateEditDto value)
+	{
+		public CreateProduct.Command Map() =>
+			new(value.Title,
+				value.Description,
+				value.Price,
+				value.CompanyId,
+				value.Pictures,
+				value.DefaultPictureId);
 
-	public static EditProduct.Command Map(this ProductCreateEditDto value, Guid id) =>
-		new(id,
-			value.Title,
-			value.Description,
-			value.Price,
-			value.CompanyId,
-			value.Pictures,
-			value.DefaultPictureId);
+		public EditProduct.Command Map(Guid id) =>
+			new(id,
+				value.Title,
+				value.Description,
+				value.Price,
+				value.CompanyId,
+				value.Pictures,
+				value.DefaultPictureId);
+	}
 }

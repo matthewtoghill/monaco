@@ -7,111 +7,105 @@ namespace Monaco.Template.Backend.Common.Api.MinimalApi;
 
 public static class MinimalApiExtensions
 {
-	public static RouteGroupBuilder CreateApiGroupBuilder(this IEndpointRouteBuilder builder,
-														  ApiVersionSet versionSet,
-														  string collectionName,
-														  int version = 1) =>
-		builder.MapGroup(string.Concat("api/v{apiVersion:apiVersion}/", collectionName))
-			   .WithName(collectionName)
-			   .WithDisplayName(collectionName)
-			   .WithTags(collectionName)
-			   .WithApiVersionSet(versionSet)
+	extension(IEndpointRouteBuilder builder)
+	{
+		public RouteGroupBuilder CreateApiGroupBuilder(ApiVersionSet versionSet,
+													   string collectionName,
+													   int version = 1) =>
+			builder.MapGroup(string.Concat("api/v{apiVersion:apiVersion}/", collectionName))
+				   .WithName(collectionName)
+				   .WithDisplayName(collectionName)
+				   .WithTags(collectionName)
+				   .WithApiVersionSet(versionSet)
 #if (!auth)
-			   .HasApiVersion(version);
+				   .HasApiVersion(version);
 #else
 			   .HasApiVersion(version)
 			   .RequireAuthorization();
 #endif
 
-	public static RouteHandlerBuilder MapGet(this IEndpointRouteBuilder builder,
-											 string pattern,
+		public RouteHandlerBuilder MapGet(string pattern,
+										  Delegate handler,
+										  string name,
+										  string summary) =>
+			builder.MapGet(pattern,
+						   handler,
+						   name,
+						   summary,
+						   string.Empty);
+
+		public RouteHandlerBuilder MapGet(string pattern,
+										  Delegate handler,
+										  string name,
+										  string summary,
+										  string description) =>
+			builder.MapGet(pattern,
+						   handler)
+				   .WithName(name)
+				   .WithSummary(summary)
+				   .WithDescription(description);
+
+		public RouteHandlerBuilder MapPost(string pattern,
+										   Delegate handler,
+										   string name,
+										   string summary) =>
+			builder.MapPost(pattern,
+							handler,
+							name,
+							summary,
+							string.Empty);
+
+		public RouteHandlerBuilder MapPost(string pattern,
+										   Delegate handler,
+										   string name,
+										   string summary,
+										   string description) =>
+			builder.MapPost(pattern,
+							handler)
+				   .WithName(name)
+				   .WithSummary(summary)
+				   .WithDescription(description);
+
+		public RouteHandlerBuilder MapPut(string pattern,
+										  Delegate handler,
+										  string name,
+										  string summary) =>
+			builder.MapPut(pattern,
+						   handler,
+						   name,
+						   summary,
+						   string.Empty);
+
+		public RouteHandlerBuilder MapPut(string pattern,
+										  Delegate handler,
+										  string name,
+										  string summary,
+										  string description) =>
+			builder.MapPut(pattern,
+						   handler)
+				   .WithName(name)
+				   .WithSummary(summary)
+				   .WithDescription(description);
+
+		public RouteHandlerBuilder MapDelete(string pattern,
 											 Delegate handler,
 											 string name,
 											 string summary) =>
-		builder.MapGet(pattern,
-					   handler,
-					   name,
-					   summary,
-					   string.Empty);
+			builder.MapDelete(pattern,
+							  handler,
+							  name,
+							  summary,
+							  string.Empty);
 
-	public static RouteHandlerBuilder MapGet(this IEndpointRouteBuilder builder,
-											 string pattern,
+		public RouteHandlerBuilder MapDelete(string pattern,
 											 Delegate handler,
 											 string name,
 											 string summary,
 											 string description) =>
-		builder.MapGet(pattern,
-					   handler)
-			   .WithName(name)
-			   .WithSummary(summary)
-			   .WithDescription(description);
-
-	public static RouteHandlerBuilder MapPost(this IEndpointRouteBuilder builder,
-											  string pattern,
-											  Delegate handler,
-											  string name,
-											  string summary) =>
-		builder.MapPost(pattern,
-						handler,
-						name,
-						summary,
-						string.Empty);
-
-	public static RouteHandlerBuilder MapPost(this IEndpointRouteBuilder builder,
-											  string pattern,
-											  Delegate handler,
-											  string name,
-											  string summary,
-											  string description) =>
-		builder.MapPost(pattern,
-						handler)
-			   .WithName(name)
-			   .WithSummary(summary)
-			   .WithDescription(description);
-
-	public static RouteHandlerBuilder MapPut(this IEndpointRouteBuilder builder,
-											 string pattern,
-											 Delegate handler,
-											 string name,
-											 string summary) =>
-		builder.MapPut(pattern,
-					   handler,
-					   name,
-					   summary,
-					   string.Empty);
-
-	public static RouteHandlerBuilder MapPut(this IEndpointRouteBuilder builder,
-											 string pattern,
-											 Delegate handler,
-											 string name,
-											 string summary,
-											 string description) =>
-		builder.MapPut(pattern,
-					   handler)
-			   .WithName(name)
-			   .WithSummary(summary)
-			   .WithDescription(description);
-
-	public static RouteHandlerBuilder MapDelete(this IEndpointRouteBuilder builder,
-												string pattern,
-												Delegate handler,
-												string name,
-												string summary) =>
-		builder.MapDelete(pattern,
-						  handler,
-						  name,
-						  summary,
-						  string.Empty);
-
-	public static RouteHandlerBuilder MapDelete(this IEndpointRouteBuilder builder,
-												string pattern,
-												Delegate handler,
-												string name,
-												string summary,
-												string description) =>
-		builder.MapDelete(pattern,
-						  handler)
-			   .WithName(name)
-			   .WithSummary(summary)
-			   .WithDescription(description);
+			builder.MapDelete(pattern,
+							  handler)
+				   .WithName(name)
+				   .WithSummary(summary)
+				   .WithDescription(description);
+	}
 }

@@ -7,64 +7,53 @@ namespace Monaco.Template.Backend.Common.Tests;
 
 public static class DbContextMockExtensions
 {
-	public static Mock<TDbContext> SetupDbSetMock<TDbContext, T>(this Mock<TDbContext> dbContextMock, T entity)
-		where TDbContext : DbContext
-		where T : Entity
+	extension<TDbContext>(Mock<TDbContext> dbContextMock) where TDbContext : DbContext
 	{
-		var entityDbSetMock = new List<T> { entity }.BuildMockDbSet();
-		dbContextMock.Setup(x => x.Set<T>()).Returns(entityDbSetMock.Object);
-		entityDbSetMock.Setup(x => x.FindAsync(new object[] { entity.Id }, It.IsAny<CancellationToken>()))
-					   .ReturnsAsync(entity);
-		return dbContextMock;
+		public Mock<TDbContext> SetupDbSetMock<T>(T entity) where T : Entity
+		{
+			var entityDbSetMock = new List<T> { entity }.BuildMockDbSet();
+			dbContextMock.Setup(x => x.Set<T>()).Returns(entityDbSetMock.Object);
+			entityDbSetMock.Setup(x => x.FindAsync(new object[] { entity.Id }, It.IsAny<CancellationToken>()))
+						   .ReturnsAsync(entity);
+			return dbContextMock;
+		}
+
+		public Mock<TDbContext> CreateEntityMockAndSetupDbSetMock<T>(out Mock<T> entityMock) where T : Entity
+		{
+			entityMock = new Mock<T>();
+			var entityDbSetMock = new List<T> { entityMock.Object }.BuildMockDbSet();
+			dbContextMock.Setup(x => x.Set<T>()).Returns(entityDbSetMock.Object);
+			entityDbSetMock.Setup(x => x.FindAsync(new object[] { It.IsAny<Guid>() }, It.IsAny<CancellationToken>()))
+						   .ReturnsAsync(entityMock.Object);
+
+			return dbContextMock;
+		}
+
+		public Mock<TDbContext> CreateEntityMockAndSetupDbSetMock<T>() where T : Entity
+			=> dbContextMock.CreateEntityMockAndSetupDbSetMock<TDbContext, T>(out _);
+
+		public Mock<TDbContext> CreateAndSetupDbSetMock<T>(T entity, out Mock<DbSet<T>> entityDbSetMock) where T : Entity
+		{
+			entityDbSetMock = new[] { entity }.BuildMockDbSet();
+			dbContextMock.Setup(x => x.Set<T>()).Returns(entityDbSetMock.Object);
+			entityDbSetMock.Setup(x => x.FindAsync(new object[] { It.IsAny<Guid>() }, It.IsAny<CancellationToken>()))
+						   .ReturnsAsync(entity);
+
+			return dbContextMock;
+		}
+
+		public Mock<TDbContext> CreateAndSetupDbSetMock<T>(T entity) where T : Entity
+			=> dbContextMock.CreateAndSetupDbSetMock(entity, out _);
+
+		public Mock<TDbContext> CreateAndSetupDbSetMock<T>(ICollection<T> entities, out Mock<DbSet<T>> entityDbSetMock) where T : Entity
+		{
+			entityDbSetMock = entities.BuildMockDbSet();
+			dbContextMock.Setup(x => x.Set<T>()).Returns(entityDbSetMock.Object);
+
+			return dbContextMock;
+		}
+
+		public Mock<TDbContext> CreateAndSetupDbSetMock<T>(ICollection<T> entities) where T : Entity
+			=> dbContextMock.CreateAndSetupDbSetMock(entities, out _);
 	}
-
-	public static Mock<TDbContext> CreateEntityMockAndSetupDbSetMock<TDbContext, T>(this Mock<TDbContext> dbContextMock, out Mock<T> entityMock)
-		where TDbContext : DbContext
-		where T : Entity
-	{
-		entityMock = new Mock<T>();
-		var entityDbSetMock = new List<T> { entityMock.Object }.BuildMockDbSet();
-		dbContextMock.Setup(x => x.Set<T>()).Returns(entityDbSetMock.Object);
-		entityDbSetMock.Setup(x => x.FindAsync(new object[] { It.IsAny<Guid>() }, It.IsAny<CancellationToken>()))
-					   .ReturnsAsync(entityMock.Object);
-
-		return dbContextMock;
-	}
-
-	public static Mock<TDbContext> CreateEntityMockAndSetupDbSetMock<TDbContext, T>(this Mock<TDbContext> dbContextMock)
-		where TDbContext : DbContext
-		where T : Entity
-		=> dbContextMock.CreateEntityMockAndSetupDbSetMock<TDbContext, T>(out _);
-
-	public static Mock<TDbContext> CreateAndSetupDbSetMock<TDbContext, T>(this Mock<TDbContext> dbContextMock, T entity, out Mock<DbSet<T>> entityDbSetMock)
-		where TDbContext : DbContext
-		where T : Entity
-	{
-		entityDbSetMock = new[] { entity }.BuildMockDbSet();
-		dbContextMock.Setup(x => x.Set<T>()).Returns(entityDbSetMock.Object);
-		entityDbSetMock.Setup(x => x.FindAsync(new object[] { It.IsAny<Guid>() }, It.IsAny<CancellationToken>()))
-					   .ReturnsAsync(entity);
-
-		return dbContextMock;
-	}
-
-	public static Mock<TDbContext> CreateAndSetupDbSetMock<TDbContext, T>(this Mock<TDbContext> dbContextMock, T entity)
-		where TDbContext : DbContext
-		where T : Entity
-		=> dbContextMock.CreateAndSetupDbSetMock(entity, out _);
-
-	public static Mock<TDbContext> CreateAndSetupDbSetMock<TDbContext, T>(this Mock<TDbContext> dbContextMock, ICollection<T> entities, out Mock<DbSet<T>> entityDbSetMock)
-		where TDbContext : DbContext
-		where T : Entity
-	{
-		entityDbSetMock = entities.BuildMockDbSet();
-		dbContextMock.Setup(x => x.Set<T>()).Returns(entityDbSetMock.Object);
-
-		return dbContextMock;
-	}
-
-	public static Mock<TDbContext> CreateAndSetupDbSetMock<TDbContext, T>(this Mock<TDbContext> dbContextMock, ICollection<T> entities)
-		where TDbContext : DbContext
-		where T : Entity
-		=> dbContextMock.CreateAndSetupDbSetMock(entities, out _);
 }

@@ -32,7 +32,7 @@ public class CommandValidationBehavior<TCommand> : IPipelineBehavior<TCommand, C
 		if (!validationResult.IsValid)
 			return CommandResult.ValidationFailed(validationResult);
 
-		return await next();
+		return await next(cancellationToken);
 	}
 }
 
@@ -67,7 +67,7 @@ public class CommandValidationBehavior<TCommand, TResult> : IPipelineBehavior<TC
 		if (!validationResult.IsValid)
 			return CommandResult<TResult?>.ValidationFailed(validationResult, default);
 
-		return await next();
+		return await next(cancellationToken);
 	}
 }
 
@@ -100,7 +100,7 @@ public class CommandValidationExistsBehavior<TCommand> : IPipelineBehavior<TComm
 		if (!validationResult.IsValid)
 			return CommandResult.NotFound();
 
-		return await next();
+		return await next(cancellationToken);
 	}
 }
 
@@ -137,6 +137,6 @@ public class CommandValidationExistsBehavior<TCommand, TResult> : IPipelineBehav
 		if (!validationResult.IsValid)
 			return CommandResult<TResult?>.NotFound();
 
-		return await next();
+		return await next(cancellationToken);
 	}
 }

@@ -6,10 +6,13 @@ namespace Monaco.Template.Backend.Common.Serilog;
 
 public static class SerilogExtensions
 {
-	public static LoggerConfiguration WithOperationId(this LoggerEnrichmentConfiguration enrichConfiguration)
+	extension(LoggerEnrichmentConfiguration enrichConfiguration)
 	{
-		ArgumentNullException.ThrowIfNull(enrichConfiguration, nameof(enrichConfiguration));
+		public LoggerConfiguration WithOperationId()
+		{
+			ArgumentNullException.ThrowIfNull(enrichConfiguration, nameof(enrichConfiguration));
 
-		return enrichConfiguration.With<OperationIdEnricher>();
+			return enrichConfiguration.With<OperationIdEnricher>();
+		}
 	}
 }

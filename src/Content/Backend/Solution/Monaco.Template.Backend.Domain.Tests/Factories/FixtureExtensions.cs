@@ -5,27 +5,30 @@ namespace Monaco.Template.Backend.Domain.Tests.Factories;
 
 public static class FixtureExtensions
 {
-	public static IFixture RegisterEntityFactories(this IFixture fixture) =>
-		fixture.RegisterCompany()
-			   .RegisterAddress()
+	extension(IFixture fixture)
+	{
+		public IFixture RegisterEntityFactories() =>
+			fixture.RegisterCompany()
+				   .RegisterAddress()
 #if (!filesSupport)
-			   .RegisterCountry();
+				   .RegisterCountry();
 #else
-			   .RegisterCountry()
-			   .RegisterDocument()
-			   .RegisterImage()
-			   .RegisterProduct();
+				   .RegisterCountry()
+				   .RegisterDocument()
+				   .RegisterImage()
+				   .RegisterProduct();
 #endif
 
-	public static void RegisterMockFactories(this IFixture fixture) =>
-		fixture.RegisterCompanyMock()
-			   .RegisterAddressMock()
+		public void RegisterMockFactories() =>
+			fixture.RegisterCompanyMock()
+				   .RegisterAddressMock()
 #if (!filesSupport)
-			   .RegisterCountryMock();
+				   .RegisterCountryMock();
 #else
-			   .RegisterCountryMock()
-			   .RegisterDocument()
-			   .RegisterImage()
-			   .RegisterProductMock();
+				   .RegisterCountryMock()
+				   .RegisterDocument()
+				   .RegisterImage()
+				   .RegisterProductMock();
 #endif
+	}
 }

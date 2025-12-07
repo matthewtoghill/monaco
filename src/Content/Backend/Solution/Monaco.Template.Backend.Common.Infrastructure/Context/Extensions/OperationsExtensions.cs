@@ -6,40 +6,38 @@ namespace Monaco.Template.Backend.Common.Infrastructure.Context.Extensions;
 
 public static class OperationsExtensions
 {
-	public static Task<bool> ExistsAsync<T>(this DbContext dbContext,
-											Guid id,
-											CancellationToken cancellationToken) where T : Entity =>
-		dbContext.Set<T>().AnyAsync(x => x.Id == id, cancellationToken);
+	extension(DbContext dbContext)
+	{
+		public Task<bool> ExistsAsync<T>(Guid id,
+										 CancellationToken cancellationToken) where T : Entity =>
+			dbContext.Set<T>().AnyAsync(x => x.Id == id, cancellationToken);
 
-	public static Task<bool> ExistsAsync<T>(this DbContext dbContext,
-											Expression<Func<T, bool>> predicate,
-											CancellationToken cancellationToken) where T : class =>
-		dbContext.Set<T>().AnyAsync(predicate, cancellationToken);
+		public Task<bool> ExistsAsync<T>(Expression<Func<T, bool>> predicate,
+										 CancellationToken cancellationToken) where T : class =>
+			dbContext.Set<T>().AnyAsync(predicate, cancellationToken);
 
-	public static async Task<T?> GetAsync<T>(this DbContext dbContext,
-											 Guid? id,
-											 CancellationToken cancellationToken) where T : class =>
-		id.HasValue
-			? await dbContext.GetAsync<T>(id.Value, cancellationToken)
-			: null;
+		public async Task<T?> GetAsync<T>(Guid? id,
+										  CancellationToken cancellationToken) where T : class =>
+			id.HasValue
+				? await dbContext.GetAsync<T>(id.Value, cancellationToken)
+				: null;
 
-	public static async Task<T> GetAsync<T>(this DbContext dbContext,
-											Guid id,
-											CancellationToken cancellationToken) where T : class =>
-		(await dbContext.Set<T>().FindAsync([id], cancellationToken))!;
+		public async Task<T> GetAsync<T>(Guid id,
+										 CancellationToken cancellationToken) where T : class =>
+			(await dbContext.Set<T>().FindAsync([id], cancellationToken))!;
 
-	public static IQueryable<TResult> Set<TResult>(this DbContext context, Type t) =>
-		(IQueryable<TResult>)context.GetType()
-									.GetMethod("Set", Type.EmptyTypes)?
-									.MakeGenericMethod(t)
-									.Invoke(context, [])!;
+		public IQueryable<TResult> Set<TResult>(Type t) =>
+			(IQueryable<TResult>)dbContext.GetType()
+										  .GetMethod("Set", Type.EmptyTypes)?
+										  .MakeGenericMethod(t)
+										  .Invoke(dbContext, [])!;
 
-	public static async Task<List<T>> GetListByIdsAsync<T>(this DbContext dbContext,
-														   Guid[] items,
-														   CancellationToken cancellationToken) where T : Entity =>
-		items.Any()
-			? await dbContext.Set<T>()
-							 .Where(x => items.Contains(x.Id))
-							 .ToListAsync(cancellationToken)
-			: [];
+		public async Task<List<T>> GetListByIdsAsync<T>(List<Guid> items,
+														CancellationToken cancellationToken) where T : Entity =>
+			items.Count > 0
+				? await dbContext.Set<T>()
+								 .Where(x => items.Contains(x.Id))
+								 .ToListAsync(cancellationToken)
+				: [];
+	}
 }

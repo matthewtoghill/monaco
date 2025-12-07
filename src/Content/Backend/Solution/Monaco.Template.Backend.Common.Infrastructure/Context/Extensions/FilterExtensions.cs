@@ -6,65 +6,69 @@ namespace Monaco.Template.Backend.Common.Infrastructure.Context.Extensions;
 
 public static class FilterExtensions
 {
-	/// <summary>
-	/// Applies a filter expression to the query by mapping the querystring with the filter map dictionary
-	/// </summary>
-	/// <typeparam name="T">The type handled by the query</typeparam>
 	/// <param name="source">The source query</param>
-	/// <param name="queryString">The querystring that provides the fields and their values for the filtering</param>
-	/// <param name="filterMap">A dictionary of field names and the expression that maps it against the domain class</param>
-	/// <param name="defaultCondition">Indicates if the default condition of the expression will be TRUE or FALSE</param>
-	/// <param name="allConditions">Indicates if the filtering must match all the conditions (AND) or just some of them (OR)</param>
-	/// <returns>Returns an IQueryable to which has been applied the predicate matching the filtering criteria</returns>
-	public static IQueryable<T> ApplyFilter<T>(this IQueryable<T> source,
-											   IEnumerable<KeyValuePair<string, StringValues>> queryString,
-											   Dictionary<string, Expression<Func<T, object>>> filterMap,
-											   bool defaultCondition = true,
-											   bool allConditions = true)
+	/// <typeparam name="T">The type handled by the query</typeparam>
+	extension<T>(IQueryable<T> source)
 	{
-		var (filterMapLower, filterList, predicate) = GetData(queryString, filterMap, defaultCondition);
-
-		foreach (var (key, values) in filterList) //and while looping through the list of valid ones to use
+		/// <summary>
+		/// Applies a filter expression to the query by mapping the querystring with the filter map dictionary
+		/// </summary>
+		/// <param name="queryString">The querystring that provides the fields and their values for the filtering</param>
+		/// <param name="filterMap">A dictionary of field names and the expression that maps it against the domain class</param>
+		/// <param name="defaultCondition">Indicates if the default condition of the expression will be TRUE or FALSE</param>
+		/// <param name="allConditions">Indicates if the filtering must match all the conditions (AND) or just some of them (OR)</param>
+		/// <returns>Returns an IQueryable to which has been applied the predicate matching the filtering criteria</returns>
+		public IQueryable<T> ApplyFilter(IEnumerable<KeyValuePair<string, StringValues>> queryString,
+										 Dictionary<string, Expression<Func<T, object>>> filterMap,
+										 bool defaultCondition = true,
+										 bool allConditions = true)
 		{
-			//generate the expression equivalent to that querystring with the mapping corresponding to the DB
-			var predicateKey = PredicateBuilder.New<T>(false); //Declare a PredicateBuilder for the current key values
-			predicateKey = values.Where(value => ValidateDataType(value, GetBodyExpression(filterMapLower[key]).Type))
-								 .Select(value => GetOperationExpression(key, filterMapLower[key], value)) //then generate the expression for each value
-								 .Aggregate(predicateKey, (current, expr) => current.Or(expr)); //and chain them all with an OR operator
-			predicate = allConditions ? predicate.And(predicateKey) : predicate.Or(predicateKey); //then add the resulting expression to the more general predicate
-		}
+			var (filterMapLower, filterList, predicate) = GetData(queryString, filterMap, defaultCondition);
 
-		return source.Where(predicate);
+			foreach (var (key, values) in filterList) //and while looping through the list of valid ones to use
+			{
+				//generate the expression equivalent to that querystring with the mapping corresponding to the DB
+				var predicateKey = PredicateBuilder.New<T>(false); //Declare a PredicateBuilder for the current key values
+				predicateKey = values.Where(value => ValidateDataType(value, GetBodyExpression(filterMapLower[key]).Type))
+									 .Select(value => GetOperationExpression(key, filterMapLower[key], value)) //then generate the expression for each value
+									 .Aggregate(predicateKey, (current, expr) => current.Or(expr)); //and chain them all with an OR operator
+				predicate = allConditions ? predicate.And(predicateKey) : predicate.Or(predicateKey); //then add the resulting expression to the more general predicate
+			}
+
+			return source.Where(predicate);
+		}
 	}
 
-	/// <summary>
-	/// Applies a filter expression to the enumerable by mapping the querystring with the filter map dictionary
-	/// </summary>
-	/// <typeparam name="T">The type handled by the enumerable</typeparam>
 	/// <param name="source">The source enumerable</param>
-	/// <param name="queryString">The querystring that provides the fields and their values for the filtering</param>
-	/// <param name="filterMap">A dictionary of field names and the expression that maps it against the domain class</param>
-	/// <param name="defaultCondition">Indicates if the default condition of the expression will be TRUE or FALSE</param>
-	/// <param name="allConditions">Indicates if the filtering must match all the conditions (AND) or just some of them (OR)</param>
-	/// <returns>Returns an IEnumerable to which has been applied the predicate matching the filtering criteria</returns>
-	public static IEnumerable<T> ApplyFilter<T>(this IEnumerable<T> source,
-												IEnumerable<KeyValuePair<string, StringValues>> queryString,
-												Dictionary<string, Expression<Func<T, object>>> filterMap,
-												bool defaultCondition = true,
-												bool allConditions = true)
+	/// <typeparam name="T">The type handled by the enumerable</typeparam>
+	extension<T>(IEnumerable<T> source)
 	{
-		var (filterMapLower, filterList, predicate) = GetData(queryString, filterMap, defaultCondition);
-
-		foreach (var (key, values) in filterList) // and while looping through the list of valid ones to use
+		/// <summary>
+		/// Applies a filter expression to the enumerable by mapping the querystring with the filter map dictionary
+		/// </summary>
+		/// <param name="queryString">The querystring that provides the fields and their values for the filtering</param>
+		/// <param name="filterMap">A dictionary of field names and the expression that maps it against the domain class</param>
+		/// <param name="defaultCondition">Indicates if the default condition of the expression will be TRUE or FALSE</param>
+		/// <param name="allConditions">Indicates if the filtering must match all the conditions (AND) or just some of them (OR)</param>
+		/// <returns>Returns an IEnumerable to which has been applied the predicate matching the filtering criteria</returns>
+		public IEnumerable<T> ApplyFilter(IEnumerable<KeyValuePair<string, StringValues>> queryString,
+										  Dictionary<string, Expression<Func<T, object>>> filterMap,
+										  bool defaultCondition = true,
+										  bool allConditions = true)
 		{
-			var predicateKey = PredicateBuilder.New<T>(false); // Declare a PredicateBuilder for the current key values
-			predicateKey = values.Where(value => ValidateDataType(value, GetBodyExpression(filterMapLower[key]).Type))
-								 .Select(value => GetOperationExpression(key, filterMapLower[key], value, true)) // then generate the expression for each value
-								 .Aggregate(predicateKey, (current, expr) => current.Or(expr));		// and chain them all with an OR operator
-			predicate = allConditions ? predicate.And(predicateKey) : predicate.Or(predicateKey);	// then add the resulting expression to the more general predicate
-		}
+			var (filterMapLower, filterList, predicate) = GetData(queryString, filterMap, defaultCondition);
 
-		return source.Where(predicate);
+			foreach (var (key, values) in filterList) // and while looping through the list of valid ones to use
+			{
+				var predicateKey = PredicateBuilder.New<T>(false); // Declare a PredicateBuilder for the current key values
+				predicateKey = values.Where(value => ValidateDataType(value, GetBodyExpression(filterMapLower[key]).Type))
+									 .Select(value => GetOperationExpression(key, filterMapLower[key], value, true)) // then generate the expression for each value
+									 .Aggregate(predicateKey, (current, expr) => current.Or(expr));		// and chain them all with an OR operator
+				predicate = allConditions ? predicate.And(predicateKey) : predicate.Or(predicateKey);	// then add the resulting expression to the more general predicate
+			}
+
+			return source.Where(predicate);
+		}
 	}
 
 	private static (Dictionary<string, Expression<Func<T, object>>> filterMapLower,

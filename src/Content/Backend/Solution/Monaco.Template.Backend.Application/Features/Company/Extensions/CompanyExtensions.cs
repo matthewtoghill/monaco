@@ -7,43 +7,52 @@ namespace Monaco.Template.Backend.Application.Features.Company.Extensions;
 
 internal static class CompanyExtensions
 {
-	public static CompanyDto? Map(this Domain.Model.Entities.Company? value, bool expandCountry = false) =>
-		value is null
-			? null
-			: new(value.Id,
-				  value.Name,
-				  value.Email,
-				  value.WebSiteUrl,
-				  value.Address?.Street,
-				  value.Address?.City,
-				  value.Address?.County,
-				  value.Address?.PostCode,
-				  value.Address?.CountryId,
-				  expandCountry ? value.Address?.Country.Map() : null);
+	extension(Domain.Model.Entities.Company? value)
+	{
+		public CompanyDto? Map(bool expandCountry = false) =>
+			value is null
+				? null
+				: new(value.Id,
+					  value.Name,
+					  value.Email,
+					  value.WebSiteUrl,
+					  value.Address?.Street,
+					  value.Address?.City,
+					  value.Address?.County,
+					  value.Address?.PostCode,
+					  value.Address?.CountryId,
+					  expandCountry ? value.Address?.Country.Map() : null);
+	}
 
-	public static Domain.Model.Entities.Company Map(this CreateCompany.Command value, Domain.Model.Entities.Country? country) =>
-		new(value.Name,
-			value.Email,
-			value.WebSiteUrl,
-			country is not null
-				? new(value.Street,
-					  value.City,
-					  value.County,
-					  value.PostCode,
-					  country)
-				: null);
+	extension(CreateCompany.Command value)
+	{
+		public Domain.Model.Entities.Company Map(Domain.Model.Entities.Country? country) =>
+			new(value.Name,
+				value.Email,
+				value.WebSiteUrl,
+				country is not null
+					? new(value.Street,
+						  value.City,
+						  value.County,
+						  value.PostCode,
+						  country)
+					: null);
+	}
 
-	public static void Map(this EditCompany.Command value, Domain.Model.Entities.Company item, Domain.Model.Entities.Country? country) =>
-		item.Update(value.Name,
-					value.Email,
-					value.WebSiteUrl,
-					country is not null
-						? new(value.Street,
-							  value.City,
-							  value.County,
-							  value.PostCode,
-							  country)
-						: null);
+	extension(EditCompany.Command value)
+	{
+		public void Map(Domain.Model.Entities.Company item, Domain.Model.Entities.Country? country) =>
+			item.Update(value.Name,
+						value.Email,
+						value.WebSiteUrl,
+						country is not null
+							? new(value.Street,
+								  value.City,
+								  value.County,
+								  value.PostCode,
+								  country)
+							: null);
+	}
 
 	public static Dictionary<string, Expression<Func<Domain.Model.Entities.Company, object>>> GetMappedFields() =>
 		new()

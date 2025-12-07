@@ -6,42 +6,47 @@ namespace Monaco.Template.Backend.Common.Infrastructure.EntityConfigurations.Ext
 
 public static class EntityTypeBuilderExtensions
 {
-	public static void ConfigureId<T>(this EntityTypeBuilder<T> builder) where T : Entity
+	extension<T>(EntityTypeBuilder<T> builder) where T : Entity
 	{
-		builder.HasKey(x => x.Id);
-		builder.Property(x => x.Id)
-			   .IsRequired();
+		public void ConfigureId()
+		{
+			builder.HasKey(x => x.Id);
+			builder.Property(x => x.Id)
+				   .IsRequired();
+		}
+
+		public void ConfigureIdWithDefaultAndValueGeneratedNever()
+		{
+			builder.ConfigureId();
+			builder.Property(x => x.Id)
+				   .ValueGeneratedNever();
+		}
+
+		public void ConfigureIdWithDbGeneratedValue()
+		{
+			builder.ConfigureId();
+			builder.Property(x => x.Id)
+				   .ValueGeneratedOnAdd();
+		}
+
+		public void ConfigureIdWithSequence()
+		{
+			builder.ConfigureId();
+			builder.Property(x => x.Id)
+				   .UseHiLo($"{typeof(T).Name}Sequence");
+		}
+
+		public void ConfigureIdWithIdentity()
+		{
+			builder.ConfigureId();
+			builder.Property(x => x.Id)
+				   .UseIdentityColumn();
+		}
 	}
 
-	public static void ConfigureIdWithDefaultAndValueGeneratedNever<T>(this EntityTypeBuilder<T> builder) where T : Entity
+	extension<TEntity>(EntityTypeBuilder<TEntity> source) where TEntity : class
 	{
-		builder.ConfigureId();
-		builder.Property(x => x.Id)
-			   .ValueGeneratedNever();
+		public DataBuilder<TEntity> HasData(Func<TEntity>[] dataFuncs) =>
+			source.HasData(dataFuncs.Select(func => func()));
 	}
-
-	public static void ConfigureIdWithDbGeneratedValue<T>(this EntityTypeBuilder<T> builder) where T : Entity
-	{
-		builder.ConfigureId();
-		builder.Property(x => x.Id)
-			   .ValueGeneratedOnAdd();
-	}
-
-	public static void ConfigureIdWithSequence<T>(this EntityTypeBuilder<T> builder) where T : Entity
-	{
-		builder.ConfigureId();
-		builder.Property(x => x.Id)
-			   .UseHiLo($"{typeof(T).Name}Sequence");
-	}
-
-	public static void ConfigureIdWithIdentity<T>(this EntityTypeBuilder<T> builder) where T : Entity
-	{
-		builder.ConfigureId();
-		builder.Property(x => x.Id)
-			   .UseIdentityColumn();
-	}
-
-	public static DataBuilder<TEntity> HasData<TEntity>(this EntityTypeBuilder<TEntity> source,
-														Func<TEntity>[] dataFuncs) where TEntity : class =>
-		source.HasData(dataFuncs.Select(func => func()));
 }

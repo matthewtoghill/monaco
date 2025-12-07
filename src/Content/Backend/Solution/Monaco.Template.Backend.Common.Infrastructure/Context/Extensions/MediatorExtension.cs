@@ -6,33 +6,36 @@ namespace Monaco.Template.Backend.Common.Infrastructure.Context.Extensions;
 
 public static class MediatorExtension
 {
-	public static async Task DispatchDomainEventsAsync(this IPublisher publisher, DbContext ctx)
+	extension(IPublisher publisher)
 	{
-		while (true)
+		public async Task DispatchDomainEventsAsync(DbContext ctx)
 		{
-			var aggregateRoots = ctx.ChangeTracker
-									.Entries<AggregateRoot>()
-									.Where(x => x.Entity
-												 .DomainEvents
-												 .Any())
-									.ToList();
+			while (true)
+			{
+				var aggregateRoots = ctx.ChangeTracker
+										.Entries<AggregateRoot>()
+										.Where(x => x.Entity
+													 .DomainEvents
+													 .Any())
+										.ToList();
 
-			var domainEvents = aggregateRoots.SelectMany(x => x.Entity.DomainEvents).ToList();
+				var domainEvents = aggregateRoots.SelectMany(x => x.Entity.DomainEvents).ToList();
 
-			aggregateRoots.ForEach(entity => entity.Entity.ClearDomainEvents());
+				aggregateRoots.ForEach(entity => entity.Entity.ClearDomainEvents());
 
-			foreach (var domainEvent in domainEvents)
-				await publisher.Publish(domainEvent);
+				foreach (var domainEvent in domainEvents)
+					await publisher.Publish(domainEvent);
 
-			//If event handlers produced more domain events, keep processing them until there's no more
-			if (ctx.ChangeTracker
-				   .Entries<AggregateRoot>()
-				   .Any(x => x.Entity
-							  .DomainEvents
-							  .Any()))
-				continue;
+				//If event handlers produced more domain events, keep processing them until there's no more
+				if (ctx.ChangeTracker
+					   .Entries<AggregateRoot>()
+					   .Any(x => x.Entity
+								  .DomainEvents
+								  .Any()))
+					continue;
 
-			break;
+				break;
+			}
 		}
 	}
 }

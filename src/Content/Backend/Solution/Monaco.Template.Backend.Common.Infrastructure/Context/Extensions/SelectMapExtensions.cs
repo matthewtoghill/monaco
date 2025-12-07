@@ -6,58 +6,54 @@ namespace Monaco.Template.Backend.Common.Infrastructure.Context.Extensions;
 
 public static class SelectMapExtensions
 {
-	public static async Task<TDto?> SingleOrDefaultMapAsync<T, TDto>(this IQueryable<T> source,
-																	 Expression<Func<T, bool>> predicate,
-																	 Expression<Func<T, TDto>> selector,
-																	 CancellationToken cancellationToken = default) =>
-		await source.Where(predicate)
-					.Select(selector)
-					.DecompileAsync()
-					.SingleOrDefaultAsync(cancellationToken);
+	extension<T>(IQueryable<T> source)
+	{
+		public async Task<TDto?> SingleOrDefaultMapAsync<TDto>(Expression<Func<T, bool>> predicate,
+															   Expression<Func<T, TDto>> selector,
+															   CancellationToken cancellationToken = default) =>
+			await source.Where(predicate)
+						.Select(selector)
+						.DecompileAsync()
+						.SingleOrDefaultAsync(cancellationToken);
 
-	public static async Task<TDto?> SingleOrDefaultMapAsync<T, TDto>(this IQueryable<T> source,
-																	 Expression<Func<T, TDto>> selector,
-																	 CancellationToken cancellationToken = default) =>
-		await source.Select(selector)
-					.DecompileAsync()
-					.SingleOrDefaultAsync(cancellationToken);
+		public async Task<TDto?> SingleOrDefaultMapAsync<TDto>(Expression<Func<T, TDto>> selector,
+															   CancellationToken cancellationToken = default) =>
+			await source.Select(selector)
+						.DecompileAsync()
+						.SingleOrDefaultAsync(cancellationToken);
 
-	public static async Task<TDto?> FirstOrDefaultMapAsync<T, TDto>(this IQueryable<T> source,
-																	Expression<Func<T, bool>> predicate,
-																	Expression<Func<T, TDto>> selector,
-																	CancellationToken cancellationToken = default) =>
-		await source.Where(predicate)
-					.Select(selector)
-					.DecompileAsync()
-					.FirstOrDefaultAsync(cancellationToken);
+		public async Task<TDto?> FirstOrDefaultMapAsync<TDto>(Expression<Func<T, bool>> predicate,
+															  Expression<Func<T, TDto>> selector,
+															  CancellationToken cancellationToken = default) =>
+			await source.Where(predicate)
+						.Select(selector)
+						.DecompileAsync()
+						.FirstOrDefaultAsync(cancellationToken);
 
-	public static async Task<TDto?> FirstOrDefaultMapAsync<T, TDto>(this IQueryable<T> source,
-																	Expression<Func<T, TDto>> selector,
-																	CancellationToken cancellationToken = default) =>
-		await source.Select(selector)
-					.DecompileAsync()
-					.FirstOrDefaultAsync(cancellationToken);
+		public async Task<TDto?> FirstOrDefaultMapAsync<TDto>(Expression<Func<T, TDto>> selector,
+															  CancellationToken cancellationToken = default) =>
+			await source.Select(selector)
+						.DecompileAsync()
+						.FirstOrDefaultAsync(cancellationToken);
 
-	public static async Task<TDto?> SingleOrDefaultAsync<T, TDto>(this IQueryable<T> source,
-																  Expression<Func<T, bool>> predicate,
-																  Expression<Func<T, TDto>> selector,
-																  CancellationToken cancellationToken = default) =>
-		await source.Where(predicate)
-					.Select(selector)
-					.SingleOrDefaultAsync(cancellationToken);
-	
-	public static async Task<TDto?> FirstOrDefaultAsync<T, TDto>(this IQueryable<T> source,
-																 Expression<Func<T, bool>> predicate,
-																 Expression<Func<T, TDto>> selector,
-																 CancellationToken cancellationToken = default) =>
-		await source.Where(predicate)
-					.Select(selector)
-					.FirstOrDefaultAsync(cancellationToken);
+		public async Task<TDto?> SingleOrDefaultAsync<TDto>(Expression<Func<T, bool>> predicate,
+															Expression<Func<T, TDto>> selector,
+															CancellationToken cancellationToken = default) =>
+			await source.Where(predicate)
+						.Select(selector)
+						.SingleOrDefaultAsync(cancellationToken);
 
-	public static async Task<List<TDto>> ToListMapAsync<T, TDto>(this IQueryable<T> source,
-																 Expression<Func<T, TDto>> selector,
-																 CancellationToken cancellationToken = default) =>
-		await source.Select(selector)
-					.DecompileAsync()
-					.ToListAsync(cancellationToken);
+		public async Task<TDto?> FirstOrDefaultAsync<TDto>(Expression<Func<T, bool>> predicate,
+														   Expression<Func<T, TDto>> selector,
+														   CancellationToken cancellationToken = default) =>
+			await source.Where(predicate)
+						.Select(selector)
+						.FirstOrDefaultAsync(cancellationToken);
+
+		public async Task<List<TDto>> ToListMapAsync<TDto>(Expression<Func<T, TDto>> selector,
+														   CancellationToken cancellationToken = default) =>
+			await source.Select(selector)
+						.DecompileAsync()
+						.ToListAsync(cancellationToken);
+	}
 }
