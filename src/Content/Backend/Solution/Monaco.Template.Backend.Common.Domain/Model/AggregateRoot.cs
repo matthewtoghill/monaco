@@ -19,7 +19,7 @@ public abstract class AggregateRoot : Entity
 
 	private readonly List<DomainEvent> _domainEvents = [];
 	/// <summary>
-	/// List that holds Domain Events for this entity instance 
+	/// List that holds Domain Events for this entity instance
 	/// </summary>
 	public IReadOnlyList<DomainEvent> DomainEvents => _domainEvents;
 

@@ -25,14 +25,14 @@ public static class FilterExtensions
 		{
 			var (filterMapLower, filterList, predicate) = GetData(queryString, filterMap, defaultCondition);
 
-			foreach (var (key, values) in filterList) //and while looping through the list of valid ones to use
+			foreach (var (key, values) in filterList) // and while looping through the list of valid ones to use
 			{
-				//generate the expression equivalent to that querystring with the mapping corresponding to the DB
-				var predicateKey = PredicateBuilder.New<T>(false); //Declare a PredicateBuilder for the current key values
+				// generate the expression equivalent to that querystring with the mapping corresponding to the DB
+				var predicateKey = PredicateBuilder.New<T>(false); // Declare a PredicateBuilder for the current key values
 				predicateKey = values.Where(value => ValidateDataType(value, GetBodyExpression(filterMapLower[key]).Type))
-									 .Select(value => GetOperationExpression(key, filterMapLower[key], value)) //then generate the expression for each value
-									 .Aggregate(predicateKey, (current, expr) => current.Or(expr)); //and chain them all with an OR operator
-				predicate = allConditions ? predicate.And(predicateKey) : predicate.Or(predicateKey); //then add the resulting expression to the more general predicate
+									 .Select(value => GetOperationExpression(key, filterMapLower[key], value)) // then generate the expression for each value
+									 .Aggregate(predicateKey, (current, expr) => current.Or(expr)); // and chain them all with an OR operator
+				predicate = allConditions ? predicate.And(predicateKey) : predicate.Or(predicateKey); // then add the resulting expression to the more general predicate
 			}
 
 			return source.Where(predicate);

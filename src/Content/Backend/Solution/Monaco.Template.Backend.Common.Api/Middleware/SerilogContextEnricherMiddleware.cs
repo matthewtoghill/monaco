@@ -8,7 +8,7 @@ public class SerilogContextEnricherMiddleware : IMiddleware
 {
 	private const string UserIdType = "sub";
 	private const string UserNameType = "preferred_username";
-	
+
 	public Task InvokeAsync(HttpContext context, RequestDelegate next)
 	{
 		var user = context.User;

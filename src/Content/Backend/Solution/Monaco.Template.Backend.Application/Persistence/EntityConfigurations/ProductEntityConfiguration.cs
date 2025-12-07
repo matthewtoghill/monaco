@@ -39,7 +39,7 @@ internal sealed class ProductEntityConfiguration : IEntityTypeConfiguration<Prod
 															  .WithMany()
 															  .OnDelete(DeleteBehavior.ClientCascade))
 			   .HasIndex($"{nameof(Product.Pictures)}Id")
-			   .IsUnique();     //Constraint for single usage of file
+			   .IsUnique();     // Constraint for single usage of file
 
 		builder.HasIndex(x => x.Title)
 			   .IsUnique(false);

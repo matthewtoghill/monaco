@@ -27,17 +27,17 @@ public static class BehaviorExtensions
 		/// <returns>The updated <see cref="IServiceCollection"/> with the registered validation behaviors.</returns>
 		public IServiceCollection RegisterCommandValidationBehaviors(Assembly assembly)
 		{
-			//Gets the CommandBase derived classes
+			// Gets the CommandBase derived classes
 			var commandBaseTypes = GetCommandBaseDerivedTypes(assembly);
-			//And adds the corresponding scoped behaviors for all the detected commands (for both existance and validation checks)
+			// And adds the corresponding scoped behaviors for all the detected commands (for both existance and validation checks)
 			commandBaseTypes.ForEach(t => services.AddScoped(typeof(IPipelineBehavior<,>).MakeGenericType(t, typeof(CommandResult)),
 															 typeof(CommandValidationExistsBehavior<>).MakeGenericType(t))
 												  .AddScoped(typeof(IPipelineBehavior<,>).MakeGenericType(t, typeof(CommandResult)),
 															 typeof(CommandValidationBehavior<>).MakeGenericType(t)));
-			//Gets the CommandBases<T> derived classes
+			// Gets the CommandBases<T> derived classes
 			var commandBaseResultTypes = GetCommandBaseOfResultDerivedTypes(assembly);
 
-			//And adds the corresponding scoped behavior for all the detected commands (only for validation checks)
+			// And adds the corresponding scoped behavior for all the detected commands (only for validation checks)
 			commandBaseResultTypes.ForEach(t =>
 										   {
 											   var tResult = t.BaseType!.GenericTypeArguments.First();
@@ -59,15 +59,15 @@ public static class BehaviorExtensions
 		/// <returns>The updated <see cref="IServiceCollection"/> with the registered behaviors.</returns>
 		public IServiceCollection RegisterCommandConcurrencyExceptionBehaviors(Assembly assembly)
 		{
-			//Gets the CommandBase derived classes
+			// Gets the CommandBase derived classes
 			var commandBaseTypes = GetCommandBaseDerivedTypes(assembly);
-			//And adds the corresponding scoped behaviors for all the detected commands
+			// And adds the corresponding scoped behaviors for all the detected commands
 			commandBaseTypes.ForEach(t => services.AddScoped(typeof(IPipelineBehavior<,>).MakeGenericType(t, typeof(CommandResult)),
 															 typeof(ConcurrencyExceptionBehavior<>).MakeGenericType(t)));
-			//Gets the CommandBases<T> derived classes
+			// Gets the CommandBases<T> derived classes
 			var commandBaseResultTypes = GetCommandBaseOfResultDerivedTypes(assembly);
 
-			//And adds the corresponding scoped behavior for all the detected commands
+			// And adds the corresponding scoped behavior for all the detected commands
 			commandBaseResultTypes.ForEach(t =>
 										   {
 											   var tResult = t.BaseType!.GenericTypeArguments.First();

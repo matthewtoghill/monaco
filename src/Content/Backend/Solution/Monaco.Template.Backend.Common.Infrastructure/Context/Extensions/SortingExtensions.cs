@@ -15,7 +15,7 @@ public static class SortingExtensions
 			var (sortMapLower, lstSort) = GetData(sortFields, defaultSortField, sortMap);
 
 			var query = source.AsQueryable();
-			foreach (var (key, value) in lstSort) //Loop through the fields and apply the sorting
+			foreach (var (key, value) in lstSort) // Loop through the fields and apply the sorting
 				query = query.GetOrderedQuery(sortMapLower[key], value, key == lstSort.Keys.First());
 			return query;
 		}
@@ -50,7 +50,7 @@ public static class SortingExtensions
 			var (sortMapLower, lstSort) = GetData(sortFields, defaultSortField, sortMap);
 
 			var query = source.AsEnumerable();
-			foreach (var (key, value) in lstSort) //Loop through the fields and apply the sorting
+			foreach (var (key, value) in lstSort) // Loop through the fields and apply the sorting
 				query = query.GetOrderedQuery(sortMapLower[key], value, key == lstSort.Keys.First());
 			return query;
 		}
@@ -78,11 +78,11 @@ public static class SortingExtensions
 	public static (Dictionary<string, Expression<Func<T, object>>> sortMapLower, Dictionary<string, bool> lstSort)
 		GetData<T>(IEnumerable<string?> sortFields, string defaultSortField, Dictionary<string, Expression<Func<T, object>>> sortMap)
 	{
-		//convert a Dictionary with Keys into lowercase to ease searching
+		// convert a Dictionary with Keys into lowercase to ease searching
 		var sortMapLower = sortMap.ToDictionary(x => x.Key.ToLower(), x => x.Value);
-		//convert the list of fields to sort into a dictionary field/direction and filter out the non-existing ones
+		// convert the list of fields to sort into a dictionary field/direction and filter out the non-existing ones
 		var lstSort = ProcessSortParam(sortFields, sortMapLower);
-		if (lstSort.Count == 0) //if there's none remaining, load the default ones
+		if (lstSort.Count == 0) // if there's none remaining, load the default ones
 			lstSort = ProcessSortParam([defaultSortField], sortMapLower);
 
 		return (sortMapLower, lstSort);

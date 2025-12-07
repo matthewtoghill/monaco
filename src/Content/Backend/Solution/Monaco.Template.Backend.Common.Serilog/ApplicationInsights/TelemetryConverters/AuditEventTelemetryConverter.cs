@@ -16,7 +16,7 @@ public class AuditEventTelemetryConverter : TelemetryConverterBase
 	{
 		ArgumentNullException.ThrowIfNull(logEvent, nameof(logEvent));
 
-		//For complying with S4456:
+		// For complying with S4456:
 		return GetTelemetries(logEvent, formatProvider);
 	}
 

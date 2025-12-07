@@ -17,7 +17,7 @@ public class JwtClaimsMapperMiddleware : IMiddleware
 	private const string ScopeClaimType = "scope";
 	private const string NameClaimType = "name";
 	private const string RoleClaimType = "role";
-	
+
 	public Task InvokeAsync(HttpContext context, RequestDelegate next)
 	{
 		if (context.GetEndpoint()?.Metadata.Any(x => x is JwtMapClaimsAttribute) ?? false)

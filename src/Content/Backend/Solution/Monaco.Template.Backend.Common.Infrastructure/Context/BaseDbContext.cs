@@ -34,10 +34,10 @@ public abstract class BaseDbContext : DbContext, IUnitOfWork
 
 		modelBuilder.Ignore<DomainEvent>();
 
-		//This will apply all configurations that inherit from IEntityTypeConfiguration<T> and have a parameterless constructor
+		// This will apply all configurations that inherit from IEntityTypeConfiguration<T> and have a parameterless constructor
 		modelBuilder.ApplyConfigurationsFromAssembly(GetConfigurationsAssembly());
 
-		//For the ones deriving from EntityTypeConfigurationBase<T>, we process scan and apply them as follows:
+		// For the ones deriving from EntityTypeConfigurationBase<T>, we process scan and apply them as follows:
 		var derivedConfigsToRegister = GetConfigurationsAssembly().GetTypes()
 																  .Where(t => (t.BaseType?.IsGenericType ?? false) &&
 																			  t.BaseType?.GetGenericTypeDefinition() == typeof(EntityTypeConfigurationBase<>))
@@ -47,19 +47,19 @@ public abstract class BaseDbContext : DbContext, IUnitOfWork
 
 	public virtual async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken)
 	{
-		// Dispatch Domain Events collection. 
+		// Dispatch Domain Events collection.
 		// Choices:
-		// A) Right BEFORE committing data (EF SaveChanges) into the DB will make a single transaction including  
+		// A) Right BEFORE committing data (EF SaveChanges) into the DB will make a single transaction including
 		// side effects from the domain event handlers which are using the same DbContext with "InstancePerLifetimeScope" or "scoped" lifetime
-		// B) Right AFTER committing data (EF SaveChanges) into the DB will make multiple transactions. 
-		// You will need to handle eventual consistency and compensatory actions in case of failures in any of the Handlers. 
+		// B) Right AFTER committing data (EF SaveChanges) into the DB will make multiple transactions.
+		// You will need to handle eventual consistency and compensatory actions in case of failures in any of the Handlers.
 		await Publisher.DispatchDomainEventsAsync(this);
 
 		ResetReferentialEntitiesState();
 
 		var entries = GetEntriesForAudit();
 
-		// After executing this line all the changes (from the Command Handler and Domain Event Handlers) 
+		// After executing this line all the changes (from the Command Handler and Domain Event Handlers)
 		// performed through the DbContext will be committed
 		await base.SaveChangesAsync(cancellationToken);
 

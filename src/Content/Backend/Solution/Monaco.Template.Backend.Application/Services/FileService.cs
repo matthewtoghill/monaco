@@ -108,7 +108,7 @@ internal class FileService : IFileService
 				   $"{item.Name}{item.Extension}",
 				   item.ContentType);
 	}
-	
+
 	public Task DeleteFileAsync(File file, CancellationToken cancellationToken) =>
 		file switch
 		{
