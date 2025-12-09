@@ -1,10 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-
 	<PackageVersion>0.0.1-alpha1</PackageVersion>
 	<Title>Monaco.Template.Backend.Common.Application</Title>
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>

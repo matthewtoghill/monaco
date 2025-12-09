@@ -37,6 +37,7 @@
   <!--#endif -->
   <!--#endif -->
   <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
 	<!--#if (apiService) -->
     <File Path="Monaco.Template.Backend.Api.http" />
