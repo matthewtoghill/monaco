@@ -13,37 +13,38 @@ public static class CorsExtensions
 	private const string MethodsSection = "Methods";
 	private const string HeadersSection = "Headers";
 
-	/// <summary>
-	/// Adds CORS policies configuration from the specified section name
-	/// </summary>
 	/// <param name="services"></param>
-	/// <param name="configuration"></param>
-	/// <param name="sectionName"></param>
-	/// <returns></returns>
-	public static IServiceCollection AddCorsPolicies(this IServiceCollection services,
-													 IConfiguration configuration,
-													 string sectionName) =>
-		services.AddCors(x =>
-						 {
-							 var corsConfigurations = configuration.GetSection(sectionName)
-																   .GetChildren()
-																   .ToList();
+	extension(IServiceCollection services)
+	{
+		/// <summary>
+		/// Adds CORS policies configuration from the specified section name
+		/// </summary>
+		/// <param name="configuration"></param>
+		/// <param name="sectionName"></param>
+		/// <returns></returns>
+		public IServiceCollection AddCorsPolicies(IConfiguration configuration,
+												  string sectionName) =>
+			services.AddCors(x =>
+							 {
+								 var corsConfigurations = configuration.GetSection(sectionName)
+																	   .GetChildren()
+																	   .ToList();
 
-							 var defaultConfig = corsConfigurations.Find(c => c[NameSection] == CorsDefaultPolicyName);
-							 if (defaultConfig is not null)
-								 x.AddDefaultPolicy(ConfigurePolicy(defaultConfig));
+								 var defaultConfig = corsConfigurations.Find(c => c[NameSection] == CorsDefaultPolicyName);
+								 if (defaultConfig is not null)
+									 x.AddDefaultPolicy(ConfigurePolicy(defaultConfig));
 
-							 corsConfigurations.ForEach(c => x.AddPolicy(c[NameSection]!, ConfigurePolicy(c)));
-						 });
+								 corsConfigurations.ForEach(c => x.AddPolicy(c[NameSection]!, ConfigurePolicy(c)));
+							 });
 
-	/// <summary>
-	/// Adds CORS policies configuration from the default section name (CorsPolicies)
-	/// </summary>
-	/// <param name="services"></param>
-	/// <param name="configuration"></param>
-	/// <returns></returns>
-	public static IServiceCollection AddCorsPolicies(this IServiceCollection services, IConfiguration configuration) =>
-		services.AddCorsPolicies(configuration, DefaultCorsPoliciesSectionName);
+		/// <summary>
+		/// Adds CORS policies configuration from the default section name (CorsPolicies)
+		/// </summary>
+		/// <param name="configuration"></param>
+		/// <returns></returns>
+		public IServiceCollection AddCorsPolicies(IConfiguration configuration) =>
+			services.AddCorsPolicies(configuration, DefaultCorsPoliciesSectionName);
+	}
 
 	private static Action<CorsPolicyBuilder> ConfigurePolicy(IConfiguration config) =>
 		p => p.WithOrigins(config.GetSection(OriginsSection)

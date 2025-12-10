@@ -9,11 +9,11 @@ using Monaco.Template.Backend.Common.Api.Auth;
 #endif
 using Monaco.Template.Backend.Common.Api.Cors;
 using Monaco.Template.Backend.Common.Api.Middleware.Extensions;
-using Monaco.Template.Backend.Common.Api.Swagger;
 using Monaco.Template.Backend.Common.Serilog;
 using Monaco.Template.Backend.Common.Serilog.ApplicationInsights.TelemetryConverters;
 using Monaco.Template.Backend.Api.Endpoints.Extensions;
 using Monaco.Template.Backend.Application.Persistence;
+using Monaco.Template.Backend.Common.Api.OpenApi;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,6 +33,7 @@ builder.Host.UseSerilog((context, config) => config.ReadFrom.Configuration(conte
 																		 .Filter.ByIncludingOnly(x => x.Properties.ContainsKey("AuditEntries")))
 												   .Enrich.WithOperationId()
 												   .Enrich.FromLogContext());
+builder.Services.AddSerilogContextEnricher();
 
 // Add services to the container.
 var configuration = builder.Configuration;
@@ -54,19 +55,13 @@ builder.Services
 								 options.BlobStorage.ContainerName = configuration["BlobStorage:Container"]!;
 #endif
 							 })
-	   .ConfigureApiVersionSwagger(configuration["Swagger:ApiDescription"]!,
-								   configuration["Swagger:Title"]!,
-								   configuration["Swagger:Description"]!,
-								   configuration["Swagger:ContactName"]!,
-								   configuration["Swagger:ContactEmail"]!,
-#if (!auth)
-								   configuration["Swagger:TermsOfService"]!)
+#if (auth)
+	   .AddOpenApiDocs(configuration["Scalar:AuthEndpoint"]!,
+					   configuration["Scalar:TokenEndpoint"]!,
+					   configuration["SSO:Audience"]!,
+					   Scopes.List)
 #else
-								   configuration["Swagger:TermsOfService"]!,
-								   configuration["Swagger:AuthEndpoint"],
-								   configuration["Swagger:TokenEndpoint"],
-								   configuration["SSO:Audience"],
-								   Scopes.List)
+	   .AddOpenApiDocs()
 #endif
 #if (massTransitIntegration)
 	   .AddMassTransit(cfg =>
@@ -80,7 +75,7 @@ builder.Services
 																		  // Disable it in API so only the Worker takes care of this.
 																		  o.DisableInboxCleanupService();
 																	  });
-						   
+
 						   var rabbitMqConfig = configuration.GetSection("MessageBus:RabbitMQ");
 						   if (rabbitMqConfig.Exists())
 							   cfg.UsingRabbitMq((_, busCfg) => busCfg.Host(rabbitMqConfig["Host"],
@@ -110,11 +105,15 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 	app.UseDeveloperExceptionPage();
 
-#if (!auth)
-app.UseSwaggerConfiguration();
+#if (auth)
+app.UseOpenApiDocs(configuration["Scalar:Title"]!,
+				   configuration["Scalar:AuthEndpoint"]!,
+				   configuration["Scalar:TokenEndpoint"]!,
+				   configuration["Scalar:ClientId"]!,
+				   configuration["SSO:Audience"]!,
+				   Scopes.List);
 #else
-app.UseSwaggerConfiguration(configuration["SSO:SwaggerUIClientId"]!,
-							configuration["Swagger:SwaggerUIAppName"]!);
+app.UseOpenApiDocs(configuration["Scalar:Title"]!);
 #endif
 
 app.UseCors()

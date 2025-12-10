@@ -246,7 +246,7 @@
         "containerId" : "05648945-7e90-42ec-a4dc-233fd52cddfe",
         "attributes" : { }
       } ],
-      "monaco-template-api-swagger-ui" : [ ],
+      "monaco-template-api-scalar" : [ ],
       "monaco-template-front" : [ ],
       "security-admin-console" : [ ],
       "monaco-template-backend" : [ ],
@@ -625,9 +625,9 @@
     "optionalClientScopes" : [ "address", "phone", "offline_access", "microprofile-jwt" ]
   }, {
     "id" : "b6049a46-fbd1-4368-a72b-364c284f01e0",
-    "clientId" : "monaco-template-api-swagger-ui",
-    "name" : "Monaco Template API Swagger",
-    "description" : "Monaco Template API - Swagger client",
+    "clientId" : "monaco-template-api-scalar",
+    "name" : "Monaco Template API Scalar",
+    "description" : "Monaco Template API - Scalar client",
     "rootUrl" : "",
     "adminUrl" : "",
     "baseUrl" : "",
