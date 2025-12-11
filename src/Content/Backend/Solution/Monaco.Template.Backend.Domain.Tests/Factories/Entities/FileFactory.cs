@@ -16,53 +16,52 @@ public static class FileFactory
 									  DateTime UploadedOn)? value = null) =>
 		FixtureFactory.Create(f => f.RegisterFileMock(value))
 					  .Create<File>();
-}
-
-public static class FileFactoryExtensions
-{
-	public static IFixture RegisterFileMock(this IFixture fixture,
-												(Guid Id,
-												string Name,
-												string Extension,
-												long Size,
-												string ContentType,
-												bool IsTemp,
-												DateTime UploadedOn)? value = null)
+	
+	extension(IFixture fixture)
 	{
-		fixture.Register(() =>
-						 {
-							 try
+		public IFixture RegisterFileMock((Guid Id,
+											 string Name,
+											 string Extension,
+											 long Size,
+											 string ContentType,
+											 bool IsTemp,
+											 DateTime UploadedOn)? value = null)
+		{
+			fixture.Register(() =>
 							 {
-								 var mock = new Mock<File>(value.HasValue
-															   ?
-															   [
-																   value.Value.Id,
-																   value.Value.Name,
-																   value.Value.Extension,
-																   value.Value.Size,
-																   value.Value.ContentType,
-																   value.Value.IsTemp
-															   ]
-															   :
-															   [
-																   fixture.Create<Guid>(),
-																   fixture.Create<string>(),
-																   fixture.Create<string>(),
-																   fixture.Create<long>(),
-																   fixture.Create<string>(),
-																   fixture.Create<bool>()
-															   ]) { CallBase = true };
-								 mock.SetupGet(x => x.UploadedOn)
-									 .Returns(value?.UploadedOn ?? fixture.Create<DateTime>());
-								 return mock.Object;
-							 }
-							 catch (Exception e)
-							 {
-								 Console.WriteLine(e);
-								 throw;
-							 }
+								 try
+								 {
+									 var mock = new Mock<File>(value.HasValue
+																   ?
+																   [
+																	   value.Value.Id,
+																	   value.Value.Name,
+																	   value.Value.Extension,
+																	   value.Value.Size,
+																	   value.Value.ContentType,
+																	   value.Value.IsTemp
+																   ]
+																   :
+																   [
+																	   fixture.Create<Guid>(),
+																	   fixture.Create<string>(),
+																	   fixture.Create<string>(),
+																	   fixture.Create<long>(),
+																	   fixture.Create<string>(),
+																	   fixture.Create<bool>()
+																   ]) { CallBase = true };
+									 mock.SetupGet(x => x.UploadedOn)
+										 .Returns(value?.UploadedOn ?? fixture.Create<DateTime>());
+									 return mock.Object;
+								 }
+								 catch (Exception e)
+								 {
+									 Console.WriteLine(e);
+									 throw;
+								 }
 
-						 });
-		return fixture;
+							 });
+			return fixture;
+		}
 	}
 }

@@ -10,31 +10,30 @@ public static class EnumerationFactory
 	public static Enumeration CreateMock((Guid Id, string Name)? value = null) =>
 		FixtureFactory.Create(f => f.RegisterEnumerationMock(value))
 					  .Create<Enumeration>();
-}
-
-public static class EnumerationFactoryExtension
-{
-	public static IFixture RegisterEnumerationMock(this IFixture fixture,
-												   (Guid Id, string Name)? value = null)
+	
+	extension(IFixture fixture)
 	{
-		fixture.Register(() =>
-						 {
-							 var mock = new Mock<Enumeration>(value.HasValue
-																  ?
-																  [
-																	  value.Value.Id,
-																	  value.Value.Name
-																  ]
-																  :
-																  [
-																	  fixture.Create<Guid>(),
-																	  fixture.Create<string>()
-																  ])
-										{
-											CallBase = true
-										};
-							 return mock.Object;
-						 });
-		return fixture;
+		public IFixture RegisterEnumerationMock((Guid Id, string Name)? value = null)
+		{
+			fixture.Register(() =>
+							 {
+								 var mock = new Mock<Enumeration>(value.HasValue
+																	  ?
+																	  [
+																		  value.Value.Id,
+																		  value.Value.Name
+																	  ]
+																	  :
+																	  [
+																		  fixture.Create<Guid>(),
+																		  fixture.Create<string>()
+																	  ])
+											{
+												CallBase = true
+											};
+								 return mock.Object;
+							 });
+			return fixture;
+		}
 	}
 }

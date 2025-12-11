@@ -11,24 +11,27 @@ namespace Monaco.Template.Backend.Api.Endpoints;
 
 internal static class Countries
 {
-	public static IEndpointRouteBuilder AddCountries(this IEndpointRouteBuilder builder, ApiVersionSet versionSet)
+	extension(IEndpointRouteBuilder builder)
 	{
-		var countries = builder.CreateApiGroupBuilder(versionSet, "Countries");
+		public IEndpointRouteBuilder AddCountries(ApiVersionSet versionSet)
+		{
+			var countries = builder.CreateApiGroupBuilder(versionSet, "Countries");
 
-		countries.MapGet("",
-						 Task<Results<Ok<List<CountryDto>>, NotFound>> ([FromServices] ISender sender,
-																		 HttpRequest request) =>
-							 sender.ExecuteQueryAsync(new GetCountryList.Query(request.Query)),
-						 "GetCountries",
-						 "Gets a list of countries");
+			countries.MapGet("",
+							 Task<Results<Ok<List<CountryDto>>, NotFound>> ([FromServices] ISender sender,
+																			HttpRequest request) =>
+								 sender.ExecuteQueryAsync(new GetCountryList.Query(request.Query)),
+							 "GetCountries",
+							 "Gets a list of countries");
 
-		countries.MapGet("{id:guid}",
-						 Task<Results<Ok<CountryDto?>, NotFound>> ([FromServices] ISender sender,
-																   [FromRoute] Guid id) =>
-							 sender.ExecuteQueryAsync(new GetCountryById.Query(id)),
-						 "GetCountry",
-						 "Gets a country by Id");
+			countries.MapGet("{id:guid}",
+							 Task<Results<Ok<CountryDto?>, NotFound>> ([FromServices] ISender sender,
+																	   [FromRoute] Guid id) =>
+								 sender.ExecuteQueryAsync(new GetCountryById.Query(id)),
+							 "GetCountry",
+							 "Gets a country by Id");
 
-		return builder;
+			return builder;
+		}
 	}
 }

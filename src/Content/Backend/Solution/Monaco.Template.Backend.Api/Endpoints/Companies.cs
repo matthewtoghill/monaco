@@ -17,72 +17,75 @@ namespace Monaco.Template.Backend.Api.Endpoints;
 
 internal static class Companies
 {
-	public static IEndpointRouteBuilder AddCompanies(this IEndpointRouteBuilder builder, ApiVersionSet versionSet)
+	extension(IEndpointRouteBuilder builder)
 	{
-		var companies = builder.CreateApiGroupBuilder(versionSet, "Companies");
+		public IEndpointRouteBuilder AddCompanies(ApiVersionSet versionSet)
+		{
+			var companies = builder.CreateApiGroupBuilder(versionSet, "Companies");
 
-		companies.MapGet("",
-						 Task<Results<Ok<Page<CompanyDto>>, NotFound>> ([FromServices] ISender sender,
-																		HttpRequest request) =>
-							 sender.ExecuteQueryAsync(new GetCompanyPage.Query(request.Query)),
-						 "GetCompanies",
+			companies.MapGet("",
+							 Task<Results<Ok<Page<CompanyDto>>, NotFound>> ([FromServices] ISender sender,
+																			HttpRequest request) =>
+								 sender.ExecuteQueryAsync(new GetCompanyPage.Query(request.Query)),
+							 "GetCompanies",
 #if (!auth)
-						 "Gets a page of companies");
+							 "Gets a page of companies");
 #else
-						 "Gets a page of companies")
-				 .RequireAuthorization(Scopes.CompaniesRead);
+							 "Gets a page of companies")
+					 .RequireAuthorization(Scopes.CompaniesRead);
 #endif
 
-		companies.MapGet("{id:guid}",
-						 Task<Results<Ok<CompanyDto?>, NotFound>> ([FromServices] ISender sender,
-																   [FromRoute] Guid id) =>
-							 sender.ExecuteQueryAsync(new GetCompanyById.Query(id)),
-						 "GetCompany",
+			companies.MapGet("{id:guid}",
+							 Task<Results<Ok<CompanyDto?>, NotFound>> ([FromServices] ISender sender,
+																	   [FromRoute] Guid id) =>
+								 sender.ExecuteQueryAsync(new GetCompanyById.Query(id)),
+							 "GetCompany",
 #if (!auth)
-						 "Gets a company by Id");
+							 "Gets a company by Id");
 #else
-						 "Gets a company by Id")
-				 .RequireAuthorization(Scopes.CompaniesRead);
+							 "Gets a company by Id")
+					 .RequireAuthorization(Scopes.CompaniesRead);
 #endif
 
-		companies.MapPost("",
-						  Task<Results<Created<Guid>, NotFound, ValidationProblem>> ([FromServices] ISender sender,
-																					 [FromBody] CompanyCreateEditDto dto,
-																					 HttpContext context) =>
-							  sender.ExecuteCommandAsync(dto.MapCreateCommand(), "api/v{0}/Companies/{1}", context.GetRequestedApiVersion()!),
-						  "CreateCompany",
+			companies.MapPost("",
+							  Task<Results<Created<Guid>, NotFound, ValidationProblem>> ([FromServices] ISender sender,
+																						 [FromBody] CompanyCreateEditDto dto,
+																						 HttpContext context) =>
+								  sender.ExecuteCommandAsync(dto.MapCreateCommand(), "api/v{0}/Companies/{1}", context.GetRequestedApiVersion()!),
+							  "CreateCompany",
 #if (!auth)
-						  "Create a new company");
+							  "Create a new company");
 #else
-						  "Create a new company")
-				 .RequireAuthorization(Scopes.CompaniesWrite);
+							  "Create a new company")
+					 .RequireAuthorization(Scopes.CompaniesWrite);
 #endif
 
-		companies.MapPut("{id:guid}",
-						 Task<Results<NoContent, NotFound, ValidationProblem>> ([FromServices] ISender sender,
-																				[FromRoute] Guid id,
-																				[FromBody] CompanyCreateEditDto dto) =>
-							 sender.ExecuteCommandEditAsync(dto.MapEditCommand(id)),
-						 "EditCompany",
+			companies.MapPut("{id:guid}",
+							 Task<Results<NoContent, NotFound, ValidationProblem>> ([FromServices] ISender sender,
+																					[FromRoute] Guid id,
+																					[FromBody] CompanyCreateEditDto dto) =>
+								 sender.ExecuteCommandEditAsync(dto.MapEditCommand(id)),
+							 "EditCompany",
 #if (!auth)
-						 "Edit an existing company by Id");
+							 "Edit an existing company by Id");
 #else
-						 "Edit an existing company by Id")
-				 .RequireAuthorization(Scopes.CompaniesWrite);
+							 "Edit an existing company by Id")
+					 .RequireAuthorization(Scopes.CompaniesWrite);
 #endif
 
-		companies.MapDelete("{id:guid}",
-							Task<Results<Ok, NotFound, ValidationProblem>> ([FromServices] ISender sender,
-																			[FromRoute] Guid id) =>
-								sender.ExecuteCommandDeleteAsync(new DeleteCompany.Command(id)),
-							"DeleteCompany",
+			companies.MapDelete("{id:guid}",
+								Task<Results<Ok, NotFound, ValidationProblem>> ([FromServices] ISender sender,
+																				[FromRoute] Guid id) =>
+									sender.ExecuteCommandDeleteAsync(new DeleteCompany.Command(id)),
+								"DeleteCompany",
 #if (!auth)
-							"Delete an existing company by Id");
+								"Delete an existing company by Id");
 #else
-							"Delete an existing company by Id")
-				 .RequireAuthorization(Scopes.CompaniesWrite);
+								"Delete an existing company by Id")
+					 .RequireAuthorization(Scopes.CompaniesWrite);
 #endif
 
-		return builder;
+			return builder;
+		}
 	}
 }

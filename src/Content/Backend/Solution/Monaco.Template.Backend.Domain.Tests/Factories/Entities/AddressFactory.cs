@@ -21,28 +21,31 @@ public static class AddressFactory
 
 public static class AddressFactoryExtensions
 {
-	public static IFixture RegisterAddress(this IFixture fixture)
+	extension(IFixture fixture)
 	{
-		fixture.Register(() => new Address(fixture.Create<string?>(),
-										   fixture.Create<string?>(),
-										   fixture.Create<string?>(),
-										   fixture.Create<string?>()?[..Address.PostCodeLength],
-										   fixture.Create<Country>()));
-		return fixture;
-	}
+		public IFixture RegisterAddress()
+		{
+			fixture.Register(() => new Address(fixture.Create<string?>(),
+											   fixture.Create<string?>(),
+											   fixture.Create<string?>(),
+											   fixture.Create<string?>()?[..Address.PostCodeLength],
+											   fixture.Create<Country>()));
+			return fixture;
+		}
 
-	public static IFixture RegisterAddressMock(this IFixture fixture)
-	{
-		fixture.Register(() =>
-						 {
-							 var country = fixture.Create<Country>();
-							 var mock = new Mock<Address>(fixture.Create<string?>()!,
-														  fixture.Create<string?>()!,
-														  fixture.Create<string?>()!,
-														  fixture.Create<string?>()?[..Address.PostCodeLength]!,
-														  country);
-							 return mock.Object;
-						 });
-		return fixture;
+		public IFixture RegisterAddressMock()
+		{
+			fixture.Register(() =>
+							 {
+								 var country = fixture.Create<Country>();
+								 var mock = new Mock<Address>(fixture.Create<string?>()!,
+															  fixture.Create<string?>()!,
+															  fixture.Create<string?>()!,
+															  fixture.Create<string?>()?[..Address.PostCodeLength]!,
+															  country);
+								 return mock.Object;
+							 });
+			return fixture;
+		}
 	}
 }

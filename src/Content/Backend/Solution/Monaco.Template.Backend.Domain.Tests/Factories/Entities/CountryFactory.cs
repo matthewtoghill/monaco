@@ -14,25 +14,25 @@ public static class CountryFactory
 	public static IEnumerable<Country> CreateMany() =>
 		FixtureFactory.Create(f => f.RegisterCountryMock())
 					  .CreateMany<Country>();
-}
-
-public static class CountryFactoryExtensions
-{
-	public static IFixture RegisterCountry(this IFixture fixture)
+	
+	extension(IFixture fixture)
 	{
-		fixture.Register(() => new Country(fixture.Create<string>()));
+		public IFixture RegisterCountry()
+		{
+			fixture.Register(() => new Country(fixture.Create<string>()));
 
-		return fixture;
-	}
+			return fixture;
+		}
 
-	public static IFixture RegisterCountryMock(this IFixture fixture)
-	{
-		fixture.Register(() =>
-						 {
-							 var mock = new Mock<Country>(fixture.Create<string>());
-							 mock.SetupGet(x => x.Id).Returns(Guid.NewGuid());
-							 return mock.Object;
-						 });
-		return fixture;
+		public IFixture RegisterCountryMock()
+		{
+			fixture.Register(() =>
+							 {
+								 var mock = new Mock<Country>(fixture.Create<string>());
+								 mock.SetupGet(x => x.Id).Returns(Guid.NewGuid());
+								 return mock.Object;
+							 });
+			return fixture;
+		}
 	}
 }

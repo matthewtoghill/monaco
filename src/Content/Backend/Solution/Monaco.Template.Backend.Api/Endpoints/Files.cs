@@ -13,28 +13,31 @@ namespace Monaco.Template.Backend.Api.Endpoints;
 
 internal static class Files
 {
-	public static IEndpointRouteBuilder AddFiles(this IEndpointRouteBuilder builder, ApiVersionSet versionSet)
+	extension(IEndpointRouteBuilder builder)
 	{
-		var files = builder.CreateApiGroupBuilder(versionSet, "Files");
+		public  IEndpointRouteBuilder AddFiles(ApiVersionSet versionSet)
+		{
+			var files = builder.CreateApiGroupBuilder(versionSet, "Files");
 
-		files.MapPost("",
-					  Task<Results<Created<Guid>, NotFound, ValidationProblem>> ([FromServices] ISender sender,
-																				 IFormFile file,
-																				 HttpContext context) =>
-						  sender.ExecuteCommandAsync(new CreateFile.Command(file.OpenReadStream(),
-																			file.FileName,
-																			file.ContentType),
-													 "api/v{0}/Files/{1}",
-													 context.GetRequestedApiVersion()!),
-					  "CreateFile",
-					  "Upload and create a new file")
+			files.MapPost("",
+						  Task<Results<Created<Guid>, NotFound, ValidationProblem>> ([FromServices] ISender sender,
+																					 IFormFile file,
+																					 HttpContext context) =>
+							  sender.ExecuteCommandAsync(new CreateFile.Command(file.OpenReadStream(),
+																				file.FileName,
+																				file.ContentType),
+														 "api/v{0}/Files/{1}",
+														 context.GetRequestedApiVersion()!),
+						  "CreateFile",
+						  "Upload and create a new file")
 #if (!auth)
-			 .DisableAntiforgery();
+				 .DisableAntiforgery();
 #else
-			 .DisableAntiforgery()
-			 .RequireAuthorization(Scopes.FilesWrite);
+				 .DisableAntiforgery()
+				 .RequireAuthorization(Scopes.FilesWrite);
 #endif
 
-		return builder;
+			return builder;
+		}
 	}
 }

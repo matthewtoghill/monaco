@@ -30,33 +30,33 @@ public static class CompanyFactory
 
 		return mock;
 	}
-}
-
-public static class CompanyFactoryExtension
-{
-	public static IFixture RegisterCompany(this IFixture fixture)
+	
+	extension(IFixture fixture)
 	{
-		fixture.Register(() => new Company(fixture.Create<string>(),
-										   fixture.Create<string>(),
-										   fixture.Create<string>(),
-										   fixture.Create<Address>()));
-		return fixture;
-	}
+		public IFixture RegisterCompany()
+		{
+			fixture.Register(() => new Company(fixture.Create<string>(),
+											   fixture.Create<string>(),
+											   fixture.Create<string>(),
+											   fixture.Create<Address>()));
+			return fixture;
+		}
 
-	public static IFixture RegisterCompanyMock(this IFixture fixture)
-	{
-		fixture.Register(() =>
-						 {
-							 var mock = new Mock<Company>(fixture.Create<string>(),
-														  fixture.Create<string>(),
-														  fixture.Create<string>(),
-														  fixture.Create<Address>());
-							 mock.SetupGet(x => x.Id).Returns(Guid.NewGuid());
+		public IFixture RegisterCompanyMock()
+		{
+			fixture.Register(() =>
+							 {
+								 var mock = new Mock<Company>(fixture.Create<string>(),
+															  fixture.Create<string>(),
+															  fixture.Create<string>(),
+															  fixture.Create<Address>());
+								 mock.SetupGet(x => x.Id).Returns(Guid.NewGuid());
 #if (filesSupport)
-							 mock.SetupGet(x => x.Products).Returns(new List<Product>());
+								 mock.SetupGet(x => x.Products).Returns(new List<Product>());
 #endif
-							 return mock.Object;
-						 });
-		return fixture;
+								 return mock.Object;
+							 });
+			return fixture;
+		}
 	}
 }

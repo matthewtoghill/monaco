@@ -13,18 +13,20 @@ internal static class ApiRoutes
 	private const string OffsetParamName = "offset";
 	private const string LimitParamName = "limit";
 
-	private static Url Expand(this Url url,
-							  bool expand,
-							  string paramName) =>
-		expand
-			? url.AppendQueryParam(ExpandParamName, paramName)
-			: url;
+	extension(Url url)
+	{
+		private Url Expand(bool expand,
+						   string paramName) =>
+			expand
+				? url.AppendQueryParam(ExpandParamName, paramName)
+				: url;
 
-	private static Url Offset(this Url url, int? offset = null) =>
-		url.SetQueryParam(OffsetParamName, offset);
+		private Url Offset(int? offset = null) =>
+			url.SetQueryParam(OffsetParamName, offset);
 
-	private static Url Limit(this Url url, int? limit = null) =>
-		url.SetQueryParam(LimitParamName, limit);
+		private Url Limit(int? limit = null) =>
+			url.SetQueryParam(LimitParamName, limit);
+	}
 
 
 	public static class Companies

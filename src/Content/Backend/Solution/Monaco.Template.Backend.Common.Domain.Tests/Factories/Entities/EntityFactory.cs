@@ -10,20 +10,20 @@ public static class EntityFactory
 	public static Entity CreateMock(Guid? id = null) =>
 		FixtureFactory.Create(f => f.RegisterEntityMock(id))
 					  .Create<Entity>();
-}
-
-public static class EntityFactoryExtension
-{
-	public static IFixture RegisterEntityMock(this IFixture fixture, Guid? id = null)
+	
+	extension(IFixture fixture)
 	{
-		fixture.Register(() =>
-						 {
-							 var mock = new Mock<Entity>(id ?? fixture.Create<Guid>())
-										{
-											CallBase = true
-										};
-							 return mock.Object;
-						 });
-		return fixture;
+		public IFixture RegisterEntityMock(Guid? id = null)
+		{
+			fixture.Register(() =>
+							 {
+								 var mock = new Mock<Entity>(id ?? fixture.Create<Guid>())
+											{
+												CallBase = true
+											};
+								 return mock.Object;
+							 });
+			return fixture;
+		}
 	}
 }
