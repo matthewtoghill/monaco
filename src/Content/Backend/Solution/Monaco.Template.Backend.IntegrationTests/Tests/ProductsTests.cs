@@ -27,7 +27,7 @@ public class ProductsTests : IntegrationTest
 	public ProductsTests(AppFixture fixture) : base(fixture)
 	{ }
 
-#if (auth)
+#if (apiService && auth)
 	protected override bool RequiresAuthentication => true;
 #endif
 

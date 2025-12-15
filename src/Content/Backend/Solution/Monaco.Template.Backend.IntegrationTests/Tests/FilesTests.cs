@@ -16,7 +16,7 @@ public class FilesTests : IntegrationTest
 	public FilesTests(AppFixture fixture) : base(fixture)
 	{ }
 
-#if (auth)
+#if (apiService && auth)
 	protected override bool RequiresAuthentication => true;
 #endif
 

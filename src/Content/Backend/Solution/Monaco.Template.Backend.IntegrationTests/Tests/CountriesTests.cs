@@ -15,7 +15,7 @@ public class CountriesTests : IntegrationTest
 	public CountriesTests(AppFixture fixture) : base(fixture)
 	{ }
 
-#if (auth)
+#if (apiService && auth)
 	protected override bool RequiresAuthentication => true;
 #endif
 
