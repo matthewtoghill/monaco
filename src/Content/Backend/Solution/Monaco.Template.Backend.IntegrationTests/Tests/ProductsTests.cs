@@ -29,8 +29,6 @@ public class ProductsTests : IntegrationTest
 
 #if (auth)
 	protected override bool RequiresAuthentication => true;
-#else
-	protected override bool RequiresAuthentication => false;
 #endif
 
 	public override async Task InitializeAsync()
@@ -224,14 +222,14 @@ public class ProductsTests : IntegrationTest
 		await DownloadProductPictureTest(productId, pictureId, true);
 	}
 
-	private async Task DownloadProductPictureTest(Guid productId, 
+	private async Task DownloadProductPictureTest(Guid productId,
 												  Guid pictureId,
 												  bool? isThumbnail = null)
 	{
 		var response = await CreateRequest(ApiRoutes.Products.DownloadPicture(productId,
 																			  pictureId,
 																			  isThumbnail)).GetAsync();
-		
+
 		var picture = await GetDbContext().Set<Image>()
 										  .AsNoTracking()
 										  .Where(x => x.Id == pictureId)
@@ -326,7 +324,7 @@ public class ProductsTests : IntegrationTest
 							  {
 								  i.Should()
 								   .BeOneOf(tempImages);
-								  
+
 								  i.IsTemp
 								   .Should()
 								   .BeFalse();

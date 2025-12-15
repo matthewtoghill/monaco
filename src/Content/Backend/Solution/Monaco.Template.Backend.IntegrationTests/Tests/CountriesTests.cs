@@ -17,8 +17,6 @@ public class CountriesTests : IntegrationTest
 
 #if (auth)
 	protected override bool RequiresAuthentication => true;
-#else
-	protected override bool RequiresAuthentication => false;
 #endif
 
 	public override async Task InitializeAsync()
@@ -34,7 +32,7 @@ public class CountriesTests : IntegrationTest
 	public async Task GetCountriesSucceeds()
 	{
 		var response = await CreateRequest(ApiRoutes.Countries.Query()).GetAsync();
-		
+
 		response.StatusCode
 				.Should()
 				.Be((int)HttpStatusCode.OK);

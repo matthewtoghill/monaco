@@ -18,8 +18,6 @@ public class FilesTests : IntegrationTest
 
 #if (auth)
 	protected override bool RequiresAuthentication => true;
-#else
-	protected override bool RequiresAuthentication => false;
 #endif
 
 	public override async Task InitializeAsync()

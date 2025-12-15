@@ -91,7 +91,7 @@ public abstract class IntegrationTest : IClassFixture<AppFixture>, IAsyncLifetim
 #if (apiService && auth)
 	protected virtual async Task SetupAccessToken(string audienceClientId,
 												  string[] roles,
-												  string[] scopes) 
+												  string[] scopes)
 	{
 		if (!RequiresAuthentication)
 			return;
