@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Monaco.Template.Backend.ArchitectureTests.Extensions;
 using Monaco.Template.Backend.Common.Application.Commands;
 using Monaco.Template.Backend.Common.Domain.Model;
-using Monaco.Template.Backend.Common.Infrastructure.EntityConfigurations;
 
 namespace Monaco.Template.Backend.ArchitectureTests;
 
@@ -74,8 +73,7 @@ public class ApplicationTests : BaseTest
 																				 .As("Entities");
 
 	private static readonly Interface EntityTypeConfiguration = Architecture.GetInterfaceOfType(typeof(IEntityTypeConfiguration<>));
-	private static readonly Class EntityTypeConfigurationBase = Architecture.GetClassOfType(typeof(EntityTypeConfigurationBase<>));
-
+	
 	private readonly GivenClassesConjunctionWithDescription _entityConfiguration = Classes().That()
 																							.AreAssignableTo(EntityTypeConfiguration)
 																							.And()
@@ -195,10 +193,6 @@ public class ApplicationTests : BaseTest
 																 .Any(etc => etc.GetImplementsInterfaceDependencies()
 																				.Any(i => i.Target.Equals(EntityTypeConfiguration) &&
 																						  i.TargetGenericArguments
-																						   .Any(g => g.Type.Equals(c))) ||
-																			 etc.GetInheritsBaseClassDependencies()
-																				.Any(b => b.Target.Equals(EntityTypeConfigurationBase) &&
-																						  b.TargetGenericArguments
 																						   .Any(g => g.Type.Equals(c)))),
 										"have their corresponding EntityTypeConfiguration",
 										"does not have its corresponding EntityTypeConfiguration")

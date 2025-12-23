@@ -66,17 +66,12 @@ public class DeleteCompanyValidatorTests
 #if filesSupport
 
 	[Theory(DisplayName = "Company assigned to Product generates error")]
-	[AutoDomainData]
+	[AutoDomainData(true)]
 	public async Task CompanyAssignedToProductGeneratesError(Domain.Model.Entities.Company company, Domain.Model.Entities.Product product)
 	{
-		var command = Command with { Id = company.Id };
-		
-		product.Update(product.Title,
-					   product.Description,
-					   product.Price,
-					   company);
+		var command = Command with { Id = product.CompanyId };
 
-		_dbContextMock.CreateAndSetupDbSetMock(company);
+		_dbContextMock.CreateAndSetupDbSetMock(product.Company);
 		_dbContextMock.CreateAndSetupDbSetMock(product);
 
 		var sut = new DeleteCompany.Validator(_dbContextMock.Object);

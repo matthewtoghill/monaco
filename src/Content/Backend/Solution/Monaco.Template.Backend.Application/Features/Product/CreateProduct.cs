@@ -91,7 +91,8 @@ public sealed class CreateProduct
 														 [.. pictures],
 														 pictures.Single(x => x.Id == request.DefaultPictureId));
 
-			_dbContext.Set<Domain.Model.Entities.Product>().Attach(item);
+			_dbContext.Set<Domain.Model.Entities.Product>()
+					  .Add(item);
 #if (massTransitIntegration)
 
 			await _publishEndpoint.Publish(item.MapMessage(), cancellationToken);

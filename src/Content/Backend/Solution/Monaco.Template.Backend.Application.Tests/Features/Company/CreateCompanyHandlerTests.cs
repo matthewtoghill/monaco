@@ -40,7 +40,7 @@ public class CreateCompanyHandlerTests
 		var sut = new CreateCompany.Handler(_dbContextMock.Object);
 		var result = await sut.Handle(Command, CancellationToken.None);
 
-		companyDbSetMock.Verify(x => x.Attach(It.IsAny<Domain.Model.Entities.Company>()), Times.Once);
+		companyDbSetMock.Verify(x => x.Add(It.IsAny<Domain.Model.Entities.Company>()), Times.Once);
 		_dbContextMock.Verify(x => x.SaveEntitiesAsync(It.IsAny<CancellationToken>()), Times.Once);
 		result.ValidationResult
 			  .IsValid

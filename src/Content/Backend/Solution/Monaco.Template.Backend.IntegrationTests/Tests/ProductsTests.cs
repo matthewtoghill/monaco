@@ -301,14 +301,14 @@ public class ProductsTests : IntegrationTest
 											.Include(x => x.DefaultPicture)
 											.ToListAsync();
 		products.Should()
-				 .HaveCount(4);
+				.HaveCount(4);
 
 		var newProduct = products.SingleOrDefault(c => c.Id == id);
 		newProduct.Should()
 				  .NotBeNull();
-		newProduct!.Title
-				   .Should()
-				   .Be(dto.Title);
+		newProduct.Title
+				  .Should()
+				  .Be(dto.Title);
 		newProduct.Description
 				  .Should()
 				  .Be(dto.Description);
@@ -345,10 +345,6 @@ public class ProductsTests : IntegrationTest
 			.BeTrue();
 #endif
 #if (workerService)
-
-		(await serviceTestHarness.Consumed.Any<ProductCreated>())
-			.Should()
-			.BeTrue();
 
 		var consumerHarness = serviceTestHarness.GetConsumerHarness<OnProductCreatedThenLongRunningProcess>();
 		(await consumerHarness.Consumed.Any<ProductCreated>())

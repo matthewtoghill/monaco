@@ -73,7 +73,9 @@ public sealed class CreateCompany
 			var country = await _dbContext.GetAsync<Domain.Model.Entities.Country>(request.CountryId, cancellationToken);
 			var item = request.Map(country);
 
-			_dbContext.Set<Domain.Model.Entities.Company>().Attach(item);
+			_dbContext.Set<Domain.Model.Entities.Company>()
+					  .Add(item);
+			
 			await _dbContext.SaveEntitiesAsync(cancellationToken);
 
 			return CommandResult<Guid>.Success(item.Id);

@@ -17,7 +17,7 @@ public class Company : AggregateRoot
 	public Company(string name,
 				   string email,
 				   string? webSiteUrl,
-				   Address? address)
+				   Address? address) : base(Guid.NewGuid())
 	{
 		(Name, Email, WebSiteUrl) = Validate(name,
 											 email,

@@ -9,7 +9,7 @@ internal sealed class ProductEntityConfiguration : IEntityTypeConfiguration<Prod
 {
 	public void Configure(EntityTypeBuilder<Product> builder)
 	{
-		builder.ConfigureIdWithDbGeneratedValue();
+		builder.ConfigureIdWithValueGeneratedNever();
 
 		builder.Property(x => x.Title)
 			   .IsRequired()

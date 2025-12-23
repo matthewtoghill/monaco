@@ -10,7 +10,7 @@ internal sealed class CompanyEntityConfiguration : IEntityTypeConfiguration<Comp
 {
 	public void Configure(EntityTypeBuilder<Company> builder)
 	{
-		builder.ConfigureIdWithDbGeneratedValue();
+		builder.ConfigureIdWithValueGeneratedNever();
 
 		builder.Property(x => x.Name)
 			   .IsRequired()

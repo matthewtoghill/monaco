@@ -17,7 +17,7 @@ namespace Monaco.Template.Backend.Application.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("ProductVersion", "10.0.1")
                 .HasAnnotation("Proxies:ChangeTracking", false)
                 .HasAnnotation("Proxies:CheckEquality", false)
                 .HasAnnotation("Proxies:LazyLoading", true)
@@ -198,7 +198,6 @@ namespace Monaco.Template.Backend.Application.Persistence.Migrations
             modelBuilder.Entity("Monaco.Template.Backend.Domain.Model.Entities.Company", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Email")
@@ -229,7 +228,6 @@ namespace Monaco.Template.Backend.Application.Persistence.Migrations
             modelBuilder.Entity("Monaco.Template.Backend.Domain.Model.Entities.Country", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
@@ -1265,7 +1263,6 @@ namespace Monaco.Template.Backend.Application.Persistence.Migrations
             modelBuilder.Entity("Monaco.Template.Backend.Domain.Model.Entities.Product", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("CompanyId")

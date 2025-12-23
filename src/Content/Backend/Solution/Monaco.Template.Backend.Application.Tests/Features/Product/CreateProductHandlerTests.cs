@@ -66,7 +66,7 @@ public class CreateProductHandlerTests
 
 		var result = await sut.Handle(command, CancellationToken.None);
 
-		productDbSetMock.Verify(x => x.Attach(It.IsAny<Domain.Model.Entities.Product>()), Times.Once);
+		productDbSetMock.Verify(x => x.Add(It.IsAny<Domain.Model.Entities.Product>()), Times.Once);
 		_dbContextMock.Verify(x => x.SaveEntitiesAsync(It.IsAny<CancellationToken>()), Times.Once);
 #if (massTransitIntegration)
 		_publishEndpointMock.Verify(x => x.Publish(It.IsAny<ProductCreated>(), It.IsAny<CancellationToken>()), Times.Once);

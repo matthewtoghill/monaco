@@ -15,7 +15,7 @@ public static class EntityTypeBuilderExtensions
 				   .IsRequired();
 		}
 
-		public void ConfigureIdWithDefaultAndValueGeneratedNever()
+		public void ConfigureIdWithValueGeneratedNever()
 		{
 			builder.ConfigureId();
 			builder.Property(x => x.Id)

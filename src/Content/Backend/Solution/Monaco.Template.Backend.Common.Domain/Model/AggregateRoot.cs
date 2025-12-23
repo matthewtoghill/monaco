@@ -33,7 +33,7 @@ public abstract class AggregateRoot : Entity
 	/// </param>
 	protected void AddDomainEvent(DomainEvent eventItem, bool unique = false)
 	{
-		if (unique && _domainEvents.Any(x => x.GetType() == eventItem.GetType()))
+		if (unique && DomainEvents.Any(x => x.GetType() == eventItem.GetType()))
 			return;
 
 		_domainEvents.Add(eventItem);

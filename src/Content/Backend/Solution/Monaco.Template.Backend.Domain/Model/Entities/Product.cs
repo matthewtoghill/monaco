@@ -17,7 +17,7 @@ public class Product : AggregateRoot
 				   decimal price,
 				   Company company,
 				   List<Image> pictures,
-				   Image defaultPicture)
+				   Image defaultPicture) : base(Guid.NewGuid())
 	{
 		Company = company;
 
@@ -27,19 +27,17 @@ public class Product : AggregateRoot
 		pictures.ToList()
 				.Throw()
 				.IfEmpty();
-
-		defaultPicture.Throw()
-					  .IfFalse(pictures.Contains);
-
+		
 		pictures.ForEach(AddPicture);
-		SetDefaultPicture(defaultPicture);
+		SetDefaultPicture(defaultPicture.Throw()
+										.IfFalse(pictures.Contains));
 	}
 
 	public string Title { get; private set; } = null!;
 	public string Description { get; private set; } = null!;
 	public decimal Price { get; private set; }
 
-	public Guid CompanyId { get; private set; }
+	public virtual Guid CompanyId { get; private set; }
 	public virtual Company Company { get; private set; } = null!;
 
 	private readonly List<Image> _pictures = [];

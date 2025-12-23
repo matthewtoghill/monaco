@@ -45,16 +45,19 @@ public static class ProductFactory
 			fixture.Register(() =>
 							 {
 								 var images = fixture.CreateMany<Image>().ToList();
+								 var company = fixture.Create<Company>();
 								 var mock = new Mock<Product>(fixture.Create<string>(),
 															  fixture.Create<string>(),
 															  fixture.Create<decimal>(),
-															  fixture.Create<Company>(),
+															  company,
 															  images,
 															  images.First());
 								 mock.SetupGet(x => x.Id)
 									 .Returns(Guid.NewGuid());
 								 mock.SetupGet(x => x.Company)
-									 .Returns(fixture.Create<Company>());
+									 .Returns(company);
+								 mock.SetupGet(x => x.CompanyId)
+									 .Returns(company.Id);
 								 mock.SetupGet(x => x.Pictures)
 									 .Returns([.. images]);
 								 mock.SetupGet(x => x.DefaultPicture)

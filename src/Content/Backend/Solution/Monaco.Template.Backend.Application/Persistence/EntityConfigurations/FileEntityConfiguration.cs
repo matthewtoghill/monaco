@@ -10,7 +10,7 @@ internal sealed class FileEntityConfiguration : IEntityTypeConfiguration<File>
 {
 	public void Configure(EntityTypeBuilder<File> builder)
 	{
-		builder.ConfigureIdWithDefaultAndValueGeneratedNever();
+		builder.ConfigureIdWithValueGeneratedNever();
 
 		builder.ToTable(nameof(File))
 			   .HasDiscriminator<string>("Discriminator")
