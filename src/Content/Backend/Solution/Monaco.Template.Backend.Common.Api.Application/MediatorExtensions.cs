@@ -10,13 +10,6 @@ namespace Monaco.Template.Backend.Common.Api.Application;
 
 public static class MediatorExtensions
 {
-	private static Results<FileStreamHttpResult, NotFound> GetFileDownload<TResult>(TResult? item) where TResult : FileDownloadDto =>
-		item is null
-			? TypedResults.NotFound()
-			: TypedResults.File(item.FileContent,
-								item.ContentType,
-								item.FileName);
-
 	extension(ISender sender)
 	{
 		/// <summary>
@@ -26,10 +19,10 @@ public static class MediatorExtensions
 		/// <param name="query"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		public async Task<Results<Ok<TResult>, NotFound>> ExecuteQueryAsync<TResult>(QueryBase<TResult> query, CancellationToken cancellationToken = default)
+		public async Task<Results<Ok<TResult>, NotFound>> ExecuteQueryAsync<TResult>(QueryBase<TResult> query,
+																					 CancellationToken cancellationToken = default)
 		{
-			var result = await sender.Send(query,
-										   cancellationToken);
+			var result = await sender.Send(query, cancellationToken);
 			return result is null
 					   ? TypedResults.NotFound()
 					   : TypedResults.Ok(result);
@@ -42,10 +35,10 @@ public static class MediatorExtensions
 		/// <param name="query"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		public async Task<Results<Ok<Page<TResult>>, NotFound>> ExecuteQueryAsync<TResult>(QueryPagedBase<TResult> query, CancellationToken cancellationToken = default)
+		public async Task<Results<Ok<Page<TResult>>, NotFound>> ExecuteQueryAsync<TResult>(QueryPagedBase<TResult> query,
+																						   CancellationToken cancellationToken = default)
 		{
-			var result = await sender.Send(query,
-										   cancellationToken);
+			var result = await sender.Send(query, cancellationToken);
 			return result is null
 					   ? TypedResults.NotFound()
 					   : TypedResults.Ok(result);
@@ -58,10 +51,10 @@ public static class MediatorExtensions
 		/// <param name="query"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		public async Task<Results<Ok<TResult>, NotFound>> ExecuteQueryAsync<TResult>(QueryByIdBase<TResult> query, CancellationToken cancellationToken = default)
+		public async Task<Results<Ok<TResult>, NotFound>> ExecuteQueryAsync<TResult>(QueryByIdBase<TResult> query,
+																					 CancellationToken cancellationToken = default)
 		{
-			var result = await sender.Send(query,
-										   cancellationToken);
+			var result = await sender.Send(query, cancellationToken);
 			return result is null
 					   ? TypedResults.NotFound()
 					   : TypedResults.Ok(result);
@@ -75,10 +68,10 @@ public static class MediatorExtensions
 		/// <param name="query"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		public async Task<Results<Ok<TResult>, NotFound>> ExecuteQueryAsync<TResult, TKey>(QueryByKeyBase<TResult, TKey> query, CancellationToken cancellationToken = default)
+		public async Task<Results<Ok<TResult>, NotFound>> ExecuteQueryAsync<TResult, TKey>(QueryByKeyBase<TResult, TKey> query,
+																						   CancellationToken cancellationToken = default)
 		{
-			var item = await sender.Send(query,
-										 cancellationToken);
+			var item = await sender.Send(query, cancellationToken);
 			return item is null
 					   ? TypedResults.NotFound()
 					   : TypedResults.Ok(item);
@@ -94,8 +87,7 @@ public static class MediatorExtensions
 		public async Task<Results<FileStreamHttpResult, NotFound>> ExecuteFileDownloadAsync<TResult>(QueryBase<TResult?> query,
 																									 CancellationToken cancellationToken = default) where TResult : FileDownloadDto
 		{
-			var item = await sender.Send(query,
-										 cancellationToken);
+			var item = await sender.Send(query, cancellationToken);
 			return GetFileDownload(item);
 		}
 
@@ -109,8 +101,7 @@ public static class MediatorExtensions
 		public async Task<Results<FileStreamHttpResult, NotFound>> ExecuteFileDownloadAsync<TResult>(QueryByIdBase<TResult?> query,
 																									 CancellationToken cancellationToken = default) where TResult : FileDownloadDto
 		{
-			var item = await sender.Send(query,
-										 cancellationToken);
+			var item = await sender.Send(query, cancellationToken);
 			return GetFileDownload(item);
 		}
 
@@ -127,14 +118,12 @@ public static class MediatorExtensions
 																													 object[]? uriParams = null,
 																													 CancellationToken cancellationToken = default)
 		{
-			var result = await sender.Send(command,
-										   cancellationToken);
+			var result = await sender.Send(command, cancellationToken);
 			return result switch
 				   {
 					   { ItemNotFound: true } => TypedResults.NotFound(),
 					   { ValidationResult.IsValid: false } => TypedResults.ValidationProblem(result.ValidationResult.ToDictionary()),
-					   _ => TypedResults.Created(string.Format(resultUri,
-															   [.. uriParams ?? [], result.Result]),
+					   _ => TypedResults.Created(string.Format(resultUri, [.. uriParams ?? [], result.Result]),
 												 new CreatedResponse(result.Result))
 				   };
 		}
@@ -145,10 +134,10 @@ public static class MediatorExtensions
 		/// <param name="command"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		public async Task<Results<NoContent, NotFound, ValidationProblem>> ExecuteCommandNoContentAsync(CommandBase command, CancellationToken cancellationToken = default)
+		public async Task<Results<NoContent, NotFound, ValidationProblem>> ExecuteCommandNoContentAsync(CommandBase command,
+																										CancellationToken cancellationToken = default)
 		{
-			var result = await sender.Send(command,
-										   cancellationToken);
+			var result = await sender.Send(command, cancellationToken);
 			return result switch
 				   {
 					   { ItemNotFound: true } => TypedResults.NotFound(),
@@ -163,10 +152,10 @@ public static class MediatorExtensions
 		/// <param name="command"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		public async Task<Results<Ok, NotFound, ValidationProblem>> ExecuteCommandOkAsync(CommandBase command, CancellationToken cancellationToken = default)
+		public async Task<Results<Ok, NotFound, ValidationProblem>> ExecuteCommandOkAsync(CommandBase command,
+																						  CancellationToken cancellationToken = default)
 		{
-			var result = await sender.Send(command,
-										   cancellationToken);
+			var result = await sender.Send(command, cancellationToken);
 			return result switch
 				   {
 					   { ItemNotFound: true } => TypedResults.NotFound(),
@@ -187,8 +176,7 @@ public static class MediatorExtensions
 																										  TResponse response,
 																										  CancellationToken cancellationToken = default) where TResponse : IResult
 		{
-			var result = await sender.Send(command,
-										   cancellationToken);
+			var result = await sender.Send(command, cancellationToken);
 			return result switch
 				   {
 					   { ItemNotFound: true } => TypedResults.NotFound(),
@@ -210,8 +198,7 @@ public static class MediatorExtensions
 																												   Func<TResult, TResponse> func,
 																												   CancellationToken cancellationToken = default) where TResponse : IResult
 		{
-			var result = await sender.Send(command,
-										   cancellationToken);
+			var result = await sender.Send(command, cancellationToken);
 			return result switch
 				   {
 					   { ItemNotFound: true } => TypedResults.NotFound(),
@@ -220,4 +207,11 @@ public static class MediatorExtensions
 				   };
 		}
 	}
+	
+	private static Results<FileStreamHttpResult, NotFound> GetFileDownload<TResult>(TResult? item) where TResult : FileDownloadDto =>
+		item is null
+			? TypedResults.NotFound()
+			: TypedResults.File(item.FileContent,
+								item.ContentType,
+								item.FileName);
 }

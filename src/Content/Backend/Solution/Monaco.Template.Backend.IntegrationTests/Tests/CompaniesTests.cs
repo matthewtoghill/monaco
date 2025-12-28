@@ -1,7 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Net;
-using System.Net.Mail;
-using AutoFixture.Xunit2;
+﻿using AutoFixture.Xunit2;
 using AwesomeAssertions;
 using Flurl.Http;
 using Microsoft.EntityFrameworkCore;
@@ -11,12 +8,14 @@ using Monaco.Template.Backend.Common.Api.Application;
 using Monaco.Template.Backend.Common.Domain.Model;
 using Monaco.Template.Backend.Domain.Model.Entities;
 using Monaco.Template.Backend.Domain.Model.ValueObjects;
+using System.Diagnostics.CodeAnalysis;
+using System.Net;
+using System.Net.Mail;
 
 namespace Monaco.Template.Backend.IntegrationTests.Tests;
 
 [ExcludeFromCodeCoverage]
-[Trait("Integration Tests",
-		  "Companies")]
+[Trait("Integration Tests", "Companies")]
 public class CompaniesTests : IntegrationTest
 {
 	public CompaniesTests(AppFixture fixture) : base(fixture)
@@ -39,22 +38,14 @@ public class CompaniesTests : IntegrationTest
 	}
 
 	[Theory(DisplayName = "Get Companies page succeeds")]
-	[InlineData(false,
-				   null,
-				   null,
-				   3)]
-	[InlineData(true,
-				   1,
-				   5,
-				   2)]
+	[InlineData(false, null, null, 3)]
+	[InlineData(true, 1, 5, 2)]
 	public async Task GetCompaniesPageSucceeds(bool expandCountry,
 											   int? offset,
 											   int? limit,
 											   int expectedItemsCount)
 	{
-		var response = await CreateRequest(ApiRoutes.Companies.Query(expandCountry,
-																	 offset,
-																	 limit)).GetAsync();
+		var response = await CreateRequest(ApiRoutes.Companies.Query(expandCountry, offset, limit)).GetAsync();
 
 		response.StatusCode
 				.Should()
