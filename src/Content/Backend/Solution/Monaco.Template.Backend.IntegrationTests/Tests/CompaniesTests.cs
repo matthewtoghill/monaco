@@ -1,20 +1,22 @@
-﻿using AutoFixture.Xunit2;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Net;
+using System.Net.Mail;
+using AutoFixture.Xunit2;
 using AwesomeAssertions;
 using Flurl.Http;
 using Microsoft.EntityFrameworkCore;
 using Monaco.Template.Backend.Api.DTOs;
 using Monaco.Template.Backend.Application.Features.Company.DTOs;
+using Monaco.Template.Backend.Common.Api.Application;
 using Monaco.Template.Backend.Common.Domain.Model;
 using Monaco.Template.Backend.Domain.Model.Entities;
 using Monaco.Template.Backend.Domain.Model.ValueObjects;
-using System.Diagnostics.CodeAnalysis;
-using System.Net;
-using System.Net.Mail;
 
 namespace Monaco.Template.Backend.IntegrationTests.Tests;
 
 [ExcludeFromCodeCoverage]
-[Trait("Integration Tests", "Companies")]
+[Trait("Integration Tests",
+		  "Companies")]
 public class CompaniesTests : IntegrationTest
 {
 	public CompaniesTests(AppFixture fixture) : base(fixture)
@@ -37,15 +39,23 @@ public class CompaniesTests : IntegrationTest
 	}
 
 	[Theory(DisplayName = "Get Companies page succeeds")]
-	[InlineData(false, null, null, 3)]
-	[InlineData(true, 1, 5, 2)]
+	[InlineData(false,
+				   null,
+				   null,
+				   3)]
+	[InlineData(true,
+				   1,
+				   5,
+				   2)]
 	public async Task GetCompaniesPageSucceeds(bool expandCountry,
 											   int? offset,
 											   int? limit,
 											   int expectedItemsCount)
 	{
-		var response = await CreateRequest(ApiRoutes.Companies.Query(expandCountry, offset, limit)).GetAsync();
-		
+		var response = await CreateRequest(ApiRoutes.Companies.Query(expandCountry,
+																	 offset,
+																	 limit)).GetAsync();
+
 		response.StatusCode
 				.Should()
 				.Be((int)HttpStatusCode.OK);
@@ -145,21 +155,23 @@ public class CompaniesTests : IntegrationTest
 				.Should()
 				.Be((int)HttpStatusCode.Created);
 
-		var result = await response.GetStringAsync();
+		var result = await response.GetJsonAsync<CreatedResponse>();
 
-		var id = Guid.Empty;
 		result.Should()
-			  .Match(value => Guid.TryParse(value.Replace("\"", ""), out id));
+			  .NotBeNull();
+		result.Id
+			  .Should()
+			  .NotBeEmpty();
 		response.Headers
 				.Should()
-				.Contain(("Location", ApiRoutes.Companies.Get(id).ToString()));
-		
+				.Contain(("Location", ApiRoutes.Companies.Get(result.Id).ToString()));
+
 		var companies = await GetDbContext().Set<Company>()
 											.ToListAsync();
 		companies.Should()
 				 .HaveCount(4);
 
-		var newCompany = companies.SingleOrDefault(c => c.Id == id);
+		var newCompany = companies.SingleOrDefault(c => c.Id == result.Id);
 		newCompany.Should()
 				  .NotBeNull();
 		newCompany!.Name

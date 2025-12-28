@@ -1,27 +1,29 @@
-﻿using AutoFixture.Xunit2;
-using Azure.Storage.Blobs;
-using Dasync.Collections;
-using AwesomeAssertions;
-using Flurl.Http;
-using Microsoft.EntityFrameworkCore;
-using Monaco.Template.Backend.Api.DTOs;
-using Monaco.Template.Backend.Common.Domain.Model;
-using System.Diagnostics.CodeAnalysis;
-using System.Net;
-using Monaco.Template.Backend.Application.Features.Product.DTOs;
-using Monaco.Template.Backend.Domain.Model.Entities;
-#if (massTransitIntegration && (apiService || workerService))
+﻿#if (massTransitIntegration && (apiService || workerService))
 using Monaco.Template.Backend.Messages.V1;
 #endif
 #if (massTransitIntegration || workerService)
 using Monaco.Template.Backend.Worker.Consumers;
 #endif
+using System.Diagnostics.CodeAnalysis;
+using System.Net;
+using AutoFixture.Xunit2;
+using AwesomeAssertions;
+using Azure.Storage.Blobs;
+using Dasync.Collections;
+using Flurl.Http;
+using Microsoft.EntityFrameworkCore;
+using Monaco.Template.Backend.Api.DTOs;
+using Monaco.Template.Backend.Application.Features.Product.DTOs;
+using Monaco.Template.Backend.Common.Api.Application;
+using Monaco.Template.Backend.Common.Domain.Model;
+using Monaco.Template.Backend.Domain.Model.Entities;
 using File = System.IO.File;
 
 namespace Monaco.Template.Backend.IntegrationTests.Tests;
 
 [ExcludeFromCodeCoverage]
-[Trait("Integration Tests", "Products")]
+[Trait("Integration Tests",
+		  "Products")]
 public class ProductsTests : IntegrationTest
 {
 	public ProductsTests(AppFixture fixture) : base(fixture)
@@ -48,8 +50,7 @@ public class ProductsTests : IntegrationTest
 	}
 #if (auth)
 
-	private Task SetupAccessToken() =>
-		SetupAccessToken([Auth.Auth.Roles.Administrator]);
+	private Task SetupAccessToken() => SetupAccessToken([Auth.Auth.Roles.Administrator]);
 #endif
 
 	private BlobContainerClient GetBlobContainerClient() =>
@@ -57,8 +58,18 @@ public class ProductsTests : IntegrationTest
 			AppFixture.StorageContainer);
 
 	[Theory(DisplayName = "Get Products page succeeds")]
-	[InlineData(false, false, false, null, null, 3)]
-	[InlineData(true, true, true, 1, 5, 2)]
+	[InlineData(false,
+				   false,
+				   false,
+				   null,
+				   null,
+				   3)]
+	[InlineData(true,
+				   true,
+				   true,
+				   1,
+				   5,
+				   2)]
 	public async Task GetProductsPageSucceeds(bool expandCompany,
 											  bool expandPictures,
 											  bool expandDefaultPicture,
@@ -210,7 +221,8 @@ public class ProductsTests : IntegrationTest
 		var productId = Guid.Parse("FA934D1C-1E6D-4DD4-ADC2-08DC18C8810C");
 		var pictureId = Guid.Parse("7D5C57BA-05F4-44FD-832E-5145C5AB0486");
 
-		await DownloadProductPictureTest(productId, pictureId);
+		await DownloadProductPictureTest(productId,
+										 pictureId);
 	}
 
 	[Fact(DisplayName = "Download Product's Picture Thumbnail succeeds")]
@@ -219,7 +231,9 @@ public class ProductsTests : IntegrationTest
 		var productId = Guid.Parse("FA934D1C-1E6D-4DD4-ADC2-08DC18C8810C");
 		var pictureId = Guid.Parse("7D5C57BA-05F4-44FD-832E-5145C5AB0486");
 
-		await DownloadProductPictureTest(productId, pictureId, true);
+		await DownloadProductPictureTest(productId,
+										 pictureId,
+										 true);
 	}
 
 	private async Task DownloadProductPictureTest(Guid productId,
@@ -285,25 +299,27 @@ public class ProductsTests : IntegrationTest
 				.Should()
 				.Be((int)HttpStatusCode.Created);
 
-		var result = await response.GetStringAsync();
+		var result = await response.GetJsonAsync<CreatedResponse>();
 
-		var id = Guid.Empty;
 		result.Should()
-			  .Match(value => Guid.TryParse(value.Replace("\"", ""), out id));
+			  .NotBeNull();
+		result.Id
+			  .Should()
+			  .NotBeEmpty();
 		response.Headers
 				.Should()
-				.Contain(("Location", ApiRoutes.Products.Get(id).ToString()));
+				.Contain(("Location", ApiRoutes.Products.Get(result.Id).ToString()));
 
 		var products = await GetDbContext().Set<Product>()
-											.Include(x => x.Company)
-											.Include(x => x.Pictures)
-											.ThenInclude(x => x.Thumbnail)
-											.Include(x => x.DefaultPicture)
-											.ToListAsync();
+										   .Include(x => x.Company)
+										   .Include(x => x.Pictures)
+										   .ThenInclude(x => x.Thumbnail)
+										   .Include(x => x.DefaultPicture)
+										   .ToListAsync();
 		products.Should()
 				.HaveCount(4);
 
-		var newProduct = products.SingleOrDefault(c => c.Id == id);
+		var newProduct = products.SingleOrDefault(c => c.Id == result.Id);
 		newProduct.Should()
 				  .NotBeNull();
 		newProduct.Title
@@ -340,14 +356,14 @@ public class ProductsTests : IntegrationTest
 #if (massTransitIntegration)
 #if (apiService)
 
-		(await apiTestHarness.Published.Any<ProductCreated>())
+		(await apiTestHarness.Published.SelectAsync<ProductCreated>().AnyAsync())
 			.Should()
 			.BeTrue();
 #endif
 #if (workerService)
 
 		var consumerHarness = serviceTestHarness.GetConsumerHarness<OnProductCreatedThenLongRunningProcess>();
-		(await consumerHarness.Consumed.Any<ProductCreated>())
+		(await consumerHarness.Consumed.SelectAsync<ProductCreated>().AnyAsync())
 			.Should()
 			.BeTrue();
 #endif
@@ -445,7 +461,6 @@ public class ProductsTests : IntegrationTest
 								.Should()
 								.NotBeNull();
 						   });
-
 	}
 
 	[Fact(DisplayName = "Delete existing Product succeeds")]
@@ -462,10 +477,10 @@ public class ProductsTests : IntegrationTest
 				.Be((int)HttpStatusCode.OK);
 
 		var products = await GetDbContext().Set<Product>()
-											.ToListAsync();
+										   .ToListAsync();
 
 		products.Should()
-				 .HaveCount(2);
+				.HaveCount(2);
 		products.Should()
 				.NotContain(x => x.Id == productId);
 	}

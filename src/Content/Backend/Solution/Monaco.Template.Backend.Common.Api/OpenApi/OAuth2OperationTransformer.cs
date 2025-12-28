@@ -27,12 +27,19 @@ public class OAuth2OperationTransformer : IOpenApiOperationTransformer
 		}
 
 		var requiredScopes = metadata.OfType<IAuthorizeData>()
-									 .Where(a => !string.IsNullOrEmpty(a.Policy))
+									 .Where(a => !string.IsNullOrWhiteSpace(a.Policy))
 									 .Select(a => a.Policy!)
 									 .Distinct()
 									 .ToList();
 
-		operation.Security = [new() { [new(OAuth2DocumentTransformer.SchemeName, context.Document)] = [..requiredScopes, _audience] }];
+		operation.Security =
+		[
+			new()
+			{
+				[new(OAuth2DocumentTransformer.SchemeName,
+					 context.Document)] = [..requiredScopes, _audience]
+			}
+		];
 
 		return Task.CompletedTask;
 	}
