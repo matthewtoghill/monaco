@@ -267,7 +267,7 @@ public class ProductsTests : IntegrationTest
 		var apiTestHarness = GetApiTestHarness();
 #endif
 #if (workerService && massTransitIntegration)
-			var serviceTestHarness = GetServiceTestHarness();
+		var serviceTestHarness = GetServiceTestHarness();
 #endif
 
 		var dbContext = Fixture.GetDbContext();
