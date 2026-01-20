@@ -15,6 +15,7 @@ using System.Net.Mail;
 namespace Monaco.Template.Backend.IntegrationTests.Tests;
 
 [ExcludeFromCodeCoverage]
+[Collection("IntegrationTests")]
 [Trait("Integration Tests", "Companies")]
 public class CompaniesTests : IntegrationTest
 {
@@ -90,8 +91,9 @@ public class CompaniesTests : IntegrationTest
 				.Be((int)HttpStatusCode.OK);
 
 		var result = await response.GetJsonAsync<CompanyDto>();
-		var company = await GetDbContext().Set<Company>()
-										  .SingleAsync(c => c.Id == companyId);
+		var company = await Fixture.GetDbContext()
+								   .Set<Company>()
+								   .SingleAsync(c => c.Id == companyId);
 
 		result.Should()
 			  .NotBeNull();
@@ -157,8 +159,9 @@ public class CompaniesTests : IntegrationTest
 				.Should()
 				.Contain(("Location", ApiRoutes.Companies.Get(result.Id).ToString()));
 
-		var companies = await GetDbContext().Set<Company>()
-											.ToListAsync();
+		var companies = await Fixture.GetDbContext()
+									 .Set<Company>()
+									 .ToListAsync();
 		companies.Should()
 				 .HaveCount(4);
 
@@ -217,8 +220,9 @@ public class CompaniesTests : IntegrationTest
 				.Should()
 				.Be((int)HttpStatusCode.NoContent);
 
-		var company = await GetDbContext().Set<Company>()
-										  .SingleOrDefaultAsync(c => c.Id == companyId);
+		var company = await Fixture.GetDbContext()
+								   .Set<Company>()
+								   .SingleOrDefaultAsync(c => c.Id == companyId);
 		company.Should()
 			   .NotBeNull();
 		company!.Name
@@ -257,8 +261,9 @@ public class CompaniesTests : IntegrationTest
 				.Should()
 				.Be((int)HttpStatusCode.OK);
 
-		var companies = await GetDbContext().Set<Company>()
-											.ToListAsync();
+		var companies = await Fixture.GetDbContext()
+									 .Set<Company>()
+									 .ToListAsync();
 		companies.Should()
 				 .HaveCount(2);
 		companies.Should()

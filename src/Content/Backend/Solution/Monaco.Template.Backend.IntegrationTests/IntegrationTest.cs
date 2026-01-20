@@ -1,18 +1,13 @@
 ﻿using Flurl.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.Extensions.DependencyInjection;
 #if (workerService)
 using Microsoft.Extensions.Hosting;
 #endif
 using System.Diagnostics.CodeAnalysis;
-using Monaco.Template.Backend.Application.Persistence;
 #if (massTransitIntegration)
 using MassTransit.Testing;
 #endif
-using Monaco.Template.Backend.IntegrationTests.Factories;
 #if (apiService && auth)
 using Monaco.Template.Backend.IntegrationTests.Auth;
 #endif
@@ -20,16 +15,13 @@ using Monaco.Template.Backend.IntegrationTests.Auth;
 namespace Monaco.Template.Backend.IntegrationTests;
 
 [ExcludeFromCodeCoverage]
-[Collection("IntegrationTests")]
-public abstract class IntegrationTest : IClassFixture<AppFixture>, IAsyncLifetime
+public abstract class IntegrationTest : IAsyncLifetime
 {
 	protected readonly AppFixture Fixture;
 #if (apiService)
-	protected ApiWebApplicationFactory WebAppFactory;
 	protected IFlurlClient Client;
 #endif
 #if (workerService)
-	protected WorkerServiceFactory WorkerServiceFactory;
 	protected IHost WorkerServiceInstance;
 #endif
 #if (apiService && auth)
@@ -42,12 +34,6 @@ public abstract class IntegrationTest : IClassFixture<AppFixture>, IAsyncLifetim
 	protected IntegrationTest(AppFixture fixture)
 	{
 		Fixture = fixture;
-#if (apiService)
-		WebAppFactory = new ApiWebApplicationFactory(Fixture);
-#endif
-#if (workerService)
-		WorkerServiceFactory = new WorkerServiceFactory(Fixture);
-#endif
 
 #if (apiService)
 		var clientOptions = new WebApplicationFactoryClientOptions
@@ -55,7 +41,7 @@ public abstract class IntegrationTest : IClassFixture<AppFixture>, IAsyncLifetim
 								AllowAutoRedirect = false
 							};
 
-		Client = new FlurlClient(WebAppFactory.CreateClient(clientOptions))
+		Client = new FlurlClient(Fixture.WebAppFactory.CreateClient(clientOptions))
 #if (auth)
 				 .AllowAnyHttpStatus()
 				 .BeforeCall(call =>
@@ -75,7 +61,7 @@ public abstract class IntegrationTest : IClassFixture<AppFixture>, IAsyncLifetim
 #endif
 #endif
 #if (workerService)
-		WorkerServiceInstance = WorkerServiceFactory.GetHostInstance();
+		WorkerServiceInstance = Fixture.WorkerServiceInstance;
 #endif
 	}
 
@@ -83,10 +69,8 @@ public abstract class IntegrationTest : IClassFixture<AppFixture>, IAsyncLifetim
 	protected IFlurlRequest CreateRequest(string endpoint) => Client.Request(endpoint);
 
 #endif
-	public virtual async Task InitializeAsync()
-	{
-		await ApplyDbMigrations();
-	}
+	public virtual Task InitializeAsync() =>
+		Task.CompletedTask;
 
 #if (apiService && auth)
 	protected virtual async Task SetupAccessToken(string audienceClientId,
@@ -106,52 +90,26 @@ public abstract class IntegrationTest : IClassFixture<AppFixture>, IAsyncLifetim
 						 Auth.Auth.Scopes);
 
 #endif
-	protected virtual AppDbContext GetDbContext() =>
-#if (apiService)
-		WebAppFactory.Services
-#elif (workerService)
-		WorkerServiceInstance.Services
-#endif
-					 .CreateScope()
-					 .ServiceProvider
-					 .GetRequiredService<AppDbContext>();
 
-	protected virtual async Task ApplyDbMigrations(string? targetMigration = null) =>
-		await GetDbContext().GetService<IMigrator>()
-							.MigrateAsync(targetMigration);
-
-	protected virtual async Task RollbackDbMigrations() =>
-		await ApplyDbMigrations("0");
-
-	protected virtual async Task RunScriptAsync(string filePath)
-	{
-		var script = await File.ReadAllTextAsync(filePath);
-		await GetDbContext().Database
-							.ExecuteSqlRawAsync(script);
-	}
+	protected virtual async Task RunScriptAsync(string filePath) =>
+		await Fixture.GetDbContext()
+					 .Database
+					 .ExecuteSqlRawAsync(await File.ReadAllTextAsync(filePath));
 
 #if (apiService && massTransitIntegration)
 	protected virtual ITestHarness GetApiTestHarness() =>
-		WebAppFactory.Services
-					 .GetTestHarness();
+		Fixture.WebAppFactory
+			   .Services
+			   .GetTestHarness();
 
 #endif
 #if (workerService && massTransitIntegration)
 	protected virtual ITestHarness GetServiceTestHarness() =>
-		WorkerServiceInstance.Services
-							 .GetTestHarness();
+		Fixture.WorkerServiceInstance
+			   .Services
+			   .GetTestHarness();
 
 #endif
-	public virtual async Task DisposeAsync()
-	{
-		await RollbackDbMigrations();
-#if (apiService)
-		await WebAppFactory.DisposeAsync();
-#endif
-#if (workerService)
-
-		await WorkerServiceInstance.StopAsync();
-		WorkerServiceInstance.Dispose();
-#endif
-	}
+	public virtual async Task DisposeAsync() =>
+		await Fixture.ResetDatabaseDataAsync();
 }

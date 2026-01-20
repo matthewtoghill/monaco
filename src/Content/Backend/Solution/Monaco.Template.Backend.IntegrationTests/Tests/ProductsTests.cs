@@ -22,6 +22,7 @@ using File = System.IO.File;
 namespace Monaco.Template.Backend.IntegrationTests.Tests;
 
 [ExcludeFromCodeCoverage]
+[Collection("IntegrationTests")]
 [Trait("Integration Tests", "Products")]
 public class ProductsTests : IntegrationTest
 {
@@ -36,9 +37,10 @@ public class ProductsTests : IntegrationTest
 	{
 		await base.InitializeAsync();
 		await RunScriptAsync(@"Scripts\Products.sql");
-		var images = await GetDbContext().Set<Image>()
-										 .AsNoTracking()
-										 .ToListAsync();
+		var images = await Fixture.GetDbContext()
+								  .Set<Image>()
+								  .AsNoTracking()
+								  .ToListAsync();
 
 		var blobContainerClient = GetBlobContainerClient();
 		foreach (var image in images)
@@ -141,12 +143,13 @@ public class ProductsTests : IntegrationTest
 				.Be((int)HttpStatusCode.OK);
 
 		var result = await response.GetJsonAsync<ProductDto>();
-		var product = await GetDbContext().Set<Product>()
-										  .Include(x => x.Company)
-										  .Include(x => x.DefaultPicture)
-										  .Include(x => x.Pictures)
-										  .ThenInclude(x => x.Thumbnail)
-										  .SingleAsync(c => c.Id == productId);
+		var product = await Fixture.GetDbContext()
+								   .Set<Product>()
+								   .Include(x => x.Company)
+								   .Include(x => x.DefaultPicture)
+								   .Include(x => x.Pictures)
+								   .ThenInclude(x => x.Thumbnail)
+								   .SingleAsync(c => c.Id == productId);
 
 		result.Should()
 			  .NotBeNull();
@@ -230,11 +233,12 @@ public class ProductsTests : IntegrationTest
 																			  pictureId,
 																			  isThumbnail)).GetAsync();
 
-		var picture = await GetDbContext().Set<Image>()
-										  .AsNoTracking()
-										  .Where(x => x.Id == pictureId)
-										  .Select(x => isThumbnail.HasValue && isThumbnail.Value ? x.Thumbnail! : x)
-										  .SingleAsync();
+		var picture = await Fixture.GetDbContext()
+								   .Set<Image>()
+								   .AsNoTracking()
+								   .Where(x => x.Id == pictureId)
+								   .Select(x => isThumbnail.HasValue && isThumbnail.Value ? x.Thumbnail! : x)
+								   .SingleAsync();
 
 		response.StatusCode
 				.Should()
@@ -263,10 +267,10 @@ public class ProductsTests : IntegrationTest
 		var apiTestHarness = GetApiTestHarness();
 #endif
 #if (workerService && massTransitIntegration)
-		var serviceTestHarness = GetServiceTestHarness();
+			var serviceTestHarness = GetServiceTestHarness();
 #endif
 
-		var dbContext = GetDbContext();
+		var dbContext = Fixture.GetDbContext();
 		var tempImages = await dbContext.Set<Image>()
 										.Where(i => i.IsTemp && i.ThumbnailId.HasValue)
 										.ToListAsync();
@@ -296,12 +300,13 @@ public class ProductsTests : IntegrationTest
 				.Should()
 				.Contain(("Location", ApiRoutes.Products.Get(result.Id).ToString()));
 
-		var products = await GetDbContext().Set<Product>()
-										   .Include(x => x.Company)
-										   .Include(x => x.Pictures)
-										   .ThenInclude(x => x.Thumbnail)
-										   .Include(x => x.DefaultPicture)
-										   .ToListAsync();
+		var products = await Fixture.GetDbContext()
+									.Set<Product>()
+									.Include(x => x.Company)
+									.Include(x => x.Pictures)
+									.ThenInclude(x => x.Thumbnail)
+									.Include(x => x.DefaultPicture)
+									.ToListAsync();
 		products.Should()
 				.HaveCount(4);
 
@@ -365,7 +370,7 @@ public class ProductsTests : IntegrationTest
 #if (auth)
 		await SetupAccessToken();
 #endif
-		var dbContext = GetDbContext();
+		var dbContext = Fixture.GetDbContext();
 		var productId = Guid.Parse("FA934D1C-1E6D-4DD4-ADC2-08DC18C8810C");
 		var productPictures = await dbContext.Set<Product>()
 											 .AsNoTracking()
@@ -390,10 +395,11 @@ public class ProductsTests : IntegrationTest
 				.Should()
 				.Be((int)HttpStatusCode.NoContent);
 
-		var product = await GetDbContext().Set<Product>()
-										  .Include(x => x.Pictures)
-										  .Include(x => x.DefaultPicture)
-										  .SingleOrDefaultAsync(c => c.Id == productId);
+		var product = await Fixture.GetDbContext()
+								   .Set<Product>()
+								   .Include(x => x.Pictures)
+								   .Include(x => x.DefaultPicture)
+								   .SingleOrDefaultAsync(c => c.Id == productId);
 		product.Should()
 			   .NotBeNull();
 		product!.Title
@@ -462,8 +468,9 @@ public class ProductsTests : IntegrationTest
 				.Should()
 				.Be((int)HttpStatusCode.OK);
 
-		var products = await GetDbContext().Set<Product>()
-										   .ToListAsync();
+		var products = await Fixture.GetDbContext()
+									.Set<Product>()
+									.ToListAsync();
 
 		products.Should()
 				.HaveCount(2);

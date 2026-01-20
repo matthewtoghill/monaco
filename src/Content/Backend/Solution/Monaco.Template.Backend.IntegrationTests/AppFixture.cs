@@ -5,14 +5,25 @@ using Testcontainers.Azurite;
 #if (auth)
 using Testcontainers.Keycloak;
 #endif
+using System.Diagnostics.CodeAnalysis;
 using Flurl;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
+using Monaco.Template.Backend.Domain.Model.Entities;
+using Respawn;
 using Testcontainers.MsSql;
 #if (massTransitIntegration)
 using Testcontainers.RabbitMq;
+using Monaco.Template.Backend.IntegrationTests.Factories;
+using Monaco.Template.Backend.Application.Persistence;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 #endif
 
 namespace Monaco.Template.Backend.IntegrationTests;
 
+[ExcludeFromCodeCoverage]
 public class AppFixture : IAsyncLifetime
 {
 #if (massTransitIntegration)
@@ -44,6 +55,17 @@ public class AppFixture : IAsyncLifetime
 																	  .Build();
 #endif
 
+#if (apiService)
+	public ApiWebApplicationFactory WebAppFactory = null!;
+
+#endif
+#if (workerService)
+	public WorkerServiceFactory WorkerServiceFactory = null!;
+	public IHost WorkerServiceInstance = null!;
+
+#endif
+	private Respawner? _respawner;
+
 	public async Task InitializeAsync()
 	{
 		await SqlContainer.StartAsync();
@@ -58,7 +80,31 @@ public class AppFixture : IAsyncLifetime
 
 		await InitStorage();
 #endif
+
+#if (apiService)
+		WebAppFactory = new ApiWebApplicationFactory(this);
+#endif
+#if (workerService)
+		WorkerServiceFactory = new WorkerServiceFactory(this);
+		WorkerServiceInstance = WorkerServiceFactory.GetHostInstance();
+#endif
+
+		await ApplyDbMigrationsAsync();
 	}
+
+	public virtual AppDbContext GetDbContext() =>
+#if (apiService)
+		WebAppFactory.Services
+#elif (workerService)
+		WorkerServiceInstance.Services
+#endif
+					 .CreateScope()
+					 .ServiceProvider
+					 .GetRequiredService<AppDbContext>();
+
+	protected virtual async Task ApplyDbMigrationsAsync(string? targetMigration = null) =>
+		await GetDbContext().GetService<IMigrator>()
+							.MigrateAsync(targetMigration);
 
 	public string SqlConnectionString =>
 		SqlContainer.GetConnectionString();
@@ -127,4 +173,31 @@ public class AppFixture : IAsyncLifetime
 			.CreateAsync();
 	}
 #endif
+
+	/// <summary>
+	/// Resets database data using Respawn. This is much faster than rolling back migrations.
+	/// Respawner is lazily initialized on first call.
+	/// </summary>
+	public async Task ResetDatabaseDataAsync()
+	{
+		var connection = GetDbContext().Database
+									   .GetDbConnection();
+
+		if (connection.State != System.Data.ConnectionState.Open)
+			await connection.OpenAsync();
+
+		_respawner ??= await Respawner.CreateAsync(connection,
+												   new RespawnerOptions
+												   {
+													   DbAdapter = DbAdapter.SqlServer,
+													   TablesToIgnore =
+													   [
+														   "__EFMigrationsHistory",
+														   nameof(Country)
+													   ],
+													   SchemasToInclude = ["dbo"]
+												   });
+
+		await _respawner.ResetAsync(connection);
+	}
 }

@@ -20,6 +20,7 @@
 	<!--#endif-->
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Respawn" />
     <PackageReference Include="Testcontainers" />
     <!--#if (filesSupport)-->
     <PackageReference Include="Testcontainers.Azurite" />
@@ -60,6 +61,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <!--#endif-->
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="xunit.runner.schema.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

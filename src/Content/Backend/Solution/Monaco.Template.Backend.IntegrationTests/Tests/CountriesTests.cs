@@ -9,6 +9,7 @@ using System.Net;
 namespace Monaco.Template.Backend.IntegrationTests.Tests;
 
 [ExcludeFromCodeCoverage]
+[Collection("IntegrationTests")]
 [Trait("Integration Tests", "Countries")]
 public class CountriesTests : IntegrationTest
 {
@@ -38,8 +39,9 @@ public class CountriesTests : IntegrationTest
 				.Be((int)HttpStatusCode.OK);
 
 		var result = await response.GetJsonAsync<CountryDto[]>();
-		var countriesCount = await GetDbContext().Set<Country>()
-												 .CountAsync();
+		var countriesCount = await Fixture.GetDbContext()
+										  .Set<Country>()
+										  .CountAsync();
 
 		result.Should()
 			  .NotBeNull();
@@ -59,8 +61,9 @@ public class CountriesTests : IntegrationTest
 				.Be((int)HttpStatusCode.OK);
 
 		var result = await response.GetJsonAsync<CountryDto>();
-		var country = await GetDbContext().Set<Country>()
-										  .SingleAsync(c => c.Id == countryId);
+		var country = await Fixture.GetDbContext()
+								   .Set<Country>()
+								   .SingleAsync(c => c.Id == countryId);
 
 		result.Should()
 			  .NotBeNull();

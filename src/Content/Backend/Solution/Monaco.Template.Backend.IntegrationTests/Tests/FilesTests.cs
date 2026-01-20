@@ -10,6 +10,7 @@ using File = Monaco.Template.Backend.Domain.Model.Entities.File;
 namespace Monaco.Template.Backend.IntegrationTests.Tests;
 
 [ExcludeFromCodeCoverage]
+[Collection("IntegrationTests")]
 [Trait("Integration Tests", "Files")]
 public class FilesTests : IntegrationTest
 {
@@ -46,9 +47,10 @@ public class FilesTests : IntegrationTest
 				.Should()
 				.Be((int)HttpStatusCode.Created);
 
-		var files = await GetDbContext().Set<File>()
-										.AsNoTracking()
-										.ToListAsync();
+		var files = await Fixture.GetDbContext()
+								 .Set<File>()
+								 .AsNoTracking()
+								 .ToListAsync();
 
 		files.Should()
 			 .AllBeAssignableTo<Image>()
