@@ -8,17 +8,19 @@ using Testcontainers.Keycloak;
 using System.Diagnostics.CodeAnalysis;
 using Flurl;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Extensions.DependencyInjection;
+#if (workerService)
 using Microsoft.Extensions.Hosting;
+#endif
+using Monaco.Template.Backend.Application.Persistence;
 using Monaco.Template.Backend.Domain.Model.Entities;
+using Monaco.Template.Backend.IntegrationTests.Factories;
 using Respawn;
 using Testcontainers.MsSql;
 #if (massTransitIntegration)
 using Testcontainers.RabbitMq;
-using Monaco.Template.Backend.IntegrationTests.Factories;
-using Monaco.Template.Backend.Application.Persistence;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 #endif
 
 namespace Monaco.Template.Backend.IntegrationTests;
