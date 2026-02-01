@@ -347,14 +347,14 @@ public class ProductsTests : IntegrationTest
 #if (massTransitIntegration)
 #if (apiService)
 
-		(await apiTestHarness.Published.SelectAsync<ProductCreated>().AnyAsync())
+		(await apiTestHarness.Published.Any<ProductCreated>())
 			.Should()
 			.BeTrue();
 #endif
 #if (workerService)
 
 		var consumerHarness = serviceTestHarness.GetConsumerHarness<OnProductCreatedThenLongRunningProcess>();
-		(await consumerHarness.Consumed.SelectAsync<ProductCreated>().AnyAsync())
+		(await consumerHarness.Consumed.Any<ProductCreated>())
 			.Should()
 			.BeTrue();
 #endif
