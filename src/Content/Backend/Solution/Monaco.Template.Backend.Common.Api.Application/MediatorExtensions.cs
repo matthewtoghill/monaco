@@ -110,8 +110,8 @@ public static class MediatorExtensions
 		/// </summary>
 		/// <param name="command"></param>
 		/// <param name="resultUri">The URI to include in the headers of the Created() response</param>
-		/// <param name="cancellationToken"></param>
 		/// <param name="uriParams">The parameters (if any) to pass for concatenating into the resultUri</param>
+		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		public async Task<Results<Created<CreatedResponse>, NotFound, ValidationProblem>> ExecuteCommandCreatedAsync(CommandBase<Guid> command,
 																													 string resultUri,
@@ -207,7 +207,7 @@ public static class MediatorExtensions
 				   };
 		}
 	}
-	
+
 	private static Results<FileStreamHttpResult, NotFound> GetFileDownload<TResult>(TResult? item) where TResult : FileDownloadDto =>
 		item is null
 			? TypedResults.NotFound()

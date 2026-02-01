@@ -9,7 +9,7 @@
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageVersion Include="Flurl.Http" Version="4.0.2" />
-    <PackageVersion Include="LinqKit.Microsoft.EntityFrameworkCore" Version="10.0.9" />
+    <PackageVersion Include="LinqKit.Microsoft.EntityFrameworkCore" Version="10.0.10" />
     <PackageVersion Include="MediatR" Version="12.5.0" />
     <PackageVersion Include="MediatR.Contracts" Version="2.0.1" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.2" />
@@ -25,7 +25,7 @@
     <PackageVersion Include="Polly.Core" Version="8.6.5" />
     <PackageVersion Include="Polly.Extensions" Version="8.6.5" />
     <PackageVersion Include="Respawn" Version="7.0.0" />
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.12.12" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.12.27" />
     <PackageVersion Include="Serilog" Version="4.3.0" />
     <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageVersion Include="Serilog.Extensions.Hosting" Version="10.0.0" />
@@ -68,11 +68,11 @@
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="AwesomeAssertions" Version="9.3.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
-    <PackageVersion Include="MockQueryable.Moq" Version="10.0.1" />
+    <PackageVersion Include="MockQueryable.Moq" Version="10.0.2" />
     <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="Testcontainers" Version="4.10.0" />
     <PackageVersion Include="Testcontainers.MsSql" Version="4.10.0" />
-    <PackageVersion Include="TngTech.ArchUnitNET.xUnit" Version="0.13.1" />
+    <PackageVersion Include="TngTech.ArchUnitNET.xUnit" Version="0.13.2" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
     <!--#endif-->
