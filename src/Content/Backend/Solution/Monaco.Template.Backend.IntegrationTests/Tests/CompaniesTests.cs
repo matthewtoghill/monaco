@@ -22,10 +22,8 @@ public class CompaniesTests : IntegrationTest
 	public CompaniesTests(AppFixture fixture) : base(fixture)
 	{ }
 
-#if (auth)
+#if (apiService && auth)
 	protected override bool RequiresAuthentication => true;
-#else
-	protected override bool RequiresAuthentication => false;
 #endif
 
 	public override async Task InitializeAsync()
