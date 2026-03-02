@@ -1,13 +1,7 @@
 ﻿using Flurl.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
-#if (workerService)
-using Microsoft.Extensions.Hosting;
-#endif
 using System.Diagnostics.CodeAnalysis;
-#if (massTransitIntegration)
-using MassTransit.Testing;
-#endif
 #if (apiService && auth)
 using Monaco.Template.Backend.IntegrationTests.Auth;
 #endif
@@ -18,12 +12,6 @@ namespace Monaco.Template.Backend.IntegrationTests;
 public abstract class IntegrationTest : IAsyncLifetime
 {
 	protected readonly AppFixture Fixture;
-#if (apiService)
-	protected IFlurlClient Client;
-#endif
-#if (workerService)
-	protected IHost WorkerServiceInstance;
-#endif
 #if (apiService && auth)
 	protected KeycloakService? KeycloakService;
 	protected AccessTokenDto? AccessToken;
@@ -36,19 +24,7 @@ public abstract class IntegrationTest : IAsyncLifetime
 		Fixture = fixture;
 
 #if (apiService)
-		var clientOptions = new WebApplicationFactoryClientOptions
-							{
-								AllowAutoRedirect = false
-							};
-
-		Client = new FlurlClient(Fixture.WebAppFactory.CreateClient(clientOptions))
 #if (auth)
-				 .AllowAnyHttpStatus()
-				 .BeforeCall(call =>
-							 {
-								 if (AccessToken is not null)
-									 call.Request.WithOAuthBearerToken(AccessToken.AccessToken);
-							 });
 
 		if (RequiresAuthentication)
 			KeycloakService = new KeycloakService(Fixture.KeycloakContainer.GetBaseAddress(),
@@ -60,14 +36,23 @@ public abstract class IntegrationTest : IAsyncLifetime
 
 #endif
 #endif
-#if (workerService)
-		WorkerServiceInstance = Fixture.WorkerServiceInstance;
-#endif
 	}
 
 #if (apiService)
-	protected IFlurlRequest CreateRequest(string endpoint) => Client.Request(endpoint);
+	protected FlurlClient GetClient(WebApplicationFactory<Api.Program> factory) =>
+        new FlurlClient(factory.CreateClient(new() { AllowAutoRedirect = false }))
+#if (auth)
+            .AllowAnyHttpStatus()
+            .BeforeCall(call =>
+            {
+                if (AccessToken is not null)
+                    call.Request.WithOAuthBearerToken(AccessToken.AccessToken);
+            });
 
+#else
+			.AllowAnyHttpStatus();
+
+#endif
 #endif
 	public virtual Task InitializeAsync() =>
 		Task.CompletedTask;
@@ -92,24 +77,10 @@ public abstract class IntegrationTest : IAsyncLifetime
 #endif
 
 	protected virtual async Task RunScriptAsync(string filePath) =>
-		await Fixture.GetDbContext()
+		await Fixture.GetDbContext(Fixture.WebAppFactory.Services)
 					 .Database
 					 .ExecuteSqlRawAsync(await File.ReadAllTextAsync(filePath));
 
-#if (apiService && massTransitIntegration)
-	protected virtual ITestHarness GetApiTestHarness() =>
-		Fixture.WebAppFactory
-			   .Services
-			   .GetTestHarness();
-
-#endif
-#if (workerService && massTransitIntegration)
-	protected virtual ITestHarness GetServiceTestHarness() =>
-		Fixture.WorkerServiceInstance
-			   .Services
-			   .GetTestHarness();
-
-#endif
 	public virtual async Task DisposeAsync() =>
 		await Fixture.ResetDatabaseDataAsync();
 }

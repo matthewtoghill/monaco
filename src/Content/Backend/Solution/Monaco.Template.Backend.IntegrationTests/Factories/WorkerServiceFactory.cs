@@ -4,8 +4,6 @@ using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace Monaco.Template.Backend.IntegrationTests.Factories;
 
@@ -32,32 +30,37 @@ public class WorkerServiceFactory : WebApplicationFactory<Worker.Program>
 									 ["MessageBus:RabbitMQ:Password"] = _fixture.RabbitMqPassword
 #endif
 								 })
-#if (massTransitIntegration)
-			   .ConfigureServices((context, services) =>
-								  {
-									  var configuration = context.Configuration;
-									  services.AddMassTransitTestHarness(cfg =>
-																		 {
-																			 var rabbitMqConfig = configuration.GetSection("MessageBus:RabbitMQ");
-																			 if (rabbitMqConfig.Exists())
-																				 cfg.UsingRabbitMq((ctx, busCfg) =>
-																								   {
-																									   busCfg.Host(rabbitMqConfig["Host"],
-																												   ushort.Parse(rabbitMqConfig["Port"] ?? "5672"),
-																												   rabbitMqConfig["VHost"],
-																												   h =>
-																												   {
-																													   h.Username(rabbitMqConfig["Username"]!);
-																													   h.Password(rabbitMqConfig["Password"]!);
-																												   });
-
-																									   busCfg.ConfigureEndpoints(ctx, new DefaultEndpointNameFormatter(true));
-																								   });
-																		 });
-								  })
-#endif
 			   .Configure(_ => { });
 
-	public IHost GetHostInstance() =>
-		Services.GetRequiredService<IHost>();
+	public WebApplicationFactory<Worker.Program> GetCustomFactory(Action<IWebHostBuilder> configure) =>
+		WithWebHostBuilder(configure);
 }
+#if (massTransitIntegration)
+
+public static class WorkerServiceFactoryExtensions
+{
+	extension(IWebHostBuilder builder)
+	{
+		public IWebHostBuilder AddMassTransitTestHarnessForWorker() =>
+			builder.ConfigureServices((context, services) =>
+										  services.AddMassTransitTestHarness(cfg =>
+																			 {
+																				 var rabbitMqConfig = context.Configuration.GetSection("MessageBus:RabbitMQ");
+																				 if (rabbitMqConfig.Exists())
+																					 cfg.UsingRabbitMq((ctx, busCfg) =>
+																									   {
+																										   busCfg.Host(rabbitMqConfig["Host"],
+																													   ushort.Parse(rabbitMqConfig["Port"] ?? "5672"),
+																													   rabbitMqConfig["VHost"],
+																													   h =>
+																													   {
+																														   h.Username(rabbitMqConfig["Username"]!);
+																														   h.Password(rabbitMqConfig["Password"]!);
+																													   });
+
+																										   busCfg.ConfigureEndpoints(ctx, new DefaultEndpointNameFormatter(true));
+																									   });
+																			 }));
+	}
+}
+#endif

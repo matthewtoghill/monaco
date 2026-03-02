@@ -1,7 +1,6 @@
 ﻿using AutoFixture.Xunit2;
 using AwesomeAssertions;
 using Azure.Storage.Blobs;
-using Dasync.Collections;
 using Flurl.Http;
 using Microsoft.EntityFrameworkCore;
 using Monaco.Template.Backend.Api.DTOs;
@@ -17,6 +16,8 @@ using Monaco.Template.Backend.Worker.Consumers;
 #endif
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using MassTransit.Testing;
+using Monaco.Template.Backend.IntegrationTests.Factories;
 using File = System.IO.File;
 
 namespace Monaco.Template.Backend.IntegrationTests.Tests;
@@ -37,7 +38,7 @@ public class ProductsTests : IntegrationTest
 	{
 		await base.InitializeAsync();
 		await RunScriptAsync(@"Scripts\Products.sql");
-		var images = await Fixture.GetDbContext()
+		var images = await Fixture.GetDbContext(Fixture.WebAppFactory.Services)
 								  .Set<Image>()
 								  .AsNoTracking()
 								  .ToListAsync();
@@ -68,11 +69,13 @@ public class ProductsTests : IntegrationTest
 											  int? limit,
 											  int expectedItemsCount)
 	{
-		var response = await CreateRequest(ApiRoutes.Products.Query(expandCompany,
-																	expandPictures,
-																	expandDefaultPicture,
-																	offset,
-																	limit)).GetAsync();
+		using var client = GetClient(Fixture.WebAppFactory);
+		var response = await client.Request(ApiRoutes.Products.Query(expandCompany,
+																	 expandPictures,
+																	 expandDefaultPicture,
+																	 offset,
+																	 limit))
+								   .GetAsync();
 
 		response.StatusCode
 				.Should()
@@ -136,14 +139,16 @@ public class ProductsTests : IntegrationTest
 	{
 		var productId = Guid.Parse("FA934D1C-1E6D-4DD4-ADC2-08DC18C8810C");
 
-		var response = await CreateRequest(ApiRoutes.Products.Get(productId)).GetAsync();
+		using var client = GetClient(Fixture.WebAppFactory);
+		var response = await client.Request(ApiRoutes.Products.Get(productId))
+								   .GetAsync();
 
 		response.StatusCode
 				.Should()
 				.Be((int)HttpStatusCode.OK);
 
 		var result = await response.GetJsonAsync<ProductDto>();
-		var product = await Fixture.GetDbContext()
+		var product = await Fixture.GetDbContext(Fixture.WebAppFactory.Services)
 								   .Set<Product>()
 								   .Include(x => x.Company)
 								   .Include(x => x.DefaultPicture)
@@ -229,11 +234,13 @@ public class ProductsTests : IntegrationTest
 												  Guid pictureId,
 												  bool? isThumbnail = null)
 	{
-		var response = await CreateRequest(ApiRoutes.Products.DownloadPicture(productId,
-																			  pictureId,
-																			  isThumbnail)).GetAsync();
+		using var client = GetClient(Fixture.WebAppFactory);
+		var response = await client.Request(ApiRoutes.Products.DownloadPicture(productId,
+																			   pictureId,
+																			   isThumbnail))
+								   .GetAsync();
 
-		var picture = await Fixture.GetDbContext()
+		var picture = await Fixture.GetDbContext(Fixture.WebAppFactory.Services)
 								   .Set<Image>()
 								   .AsNoTracking()
 								   .Where(x => x.Id == pictureId)
@@ -260,17 +267,21 @@ public class ProductsTests : IntegrationTest
 											   string description,
 											   decimal price)
 	{
+		var webAppFactory = Fixture.WebAppFactory.GetCustomFactory(b => b.AddMassTransitTestHarnessForWebApp());
+		var workerServiceFactory = Fixture.WorkerServiceFactory.GetCustomFactory(b => b.AddMassTransitTestHarnessForWorker());
+
+		using var client = GetClient(webAppFactory);
 #if (auth)
 		await SetupAccessToken();
 #endif
 #if (apiService && massTransitIntegration)
-		var apiTestHarness = GetApiTestHarness();
+		var apiTestHarness = webAppFactory.Services.GetTestHarness();
 #endif
 #if (workerService && massTransitIntegration)
-		var serviceTestHarness = GetServiceTestHarness();
+		var serviceTestHarness = workerServiceFactory.Services.GetTestHarness();
 #endif
 
-		var dbContext = Fixture.GetDbContext();
+		var dbContext = Fixture.GetDbContext(webAppFactory.Services);
 		var tempImages = await dbContext.Set<Image>()
 										.Where(i => i.IsTemp && i.ThumbnailId.HasValue)
 										.ToListAsync();
@@ -283,7 +294,7 @@ public class ProductsTests : IntegrationTest
 										   [.. tempImages.Select(i => i.Id)],
 										   tempImages.Last().Id);
 
-		var response = await CreateRequest(ApiRoutes.Products.Post()).PostJsonAsync(dto);
+		var response = await client.Request(ApiRoutes.Products.Post()).PostJsonAsync(dto);
 
 		response.StatusCode
 				.Should()
@@ -300,7 +311,7 @@ public class ProductsTests : IntegrationTest
 				.Should()
 				.Contain(("Location", ApiRoutes.Products.Get(result.Id).ToString()));
 
-		var products = await Fixture.GetDbContext()
+		var products = await Fixture.GetDbContext(webAppFactory.Services)
 									.Set<Product>()
 									.Include(x => x.Company)
 									.Include(x => x.Pictures)
@@ -347,14 +358,25 @@ public class ProductsTests : IntegrationTest
 #if (massTransitIntegration)
 #if (apiService)
 
-		(await apiTestHarness.Published.SelectAsync<ProductCreated>().AnyAsync())
-			.Should()
-			.BeTrue();
+		var message = await apiTestHarness.Published
+										  .SelectAsync<ProductCreated>()
+										  .SingleOrDefaultAsync(x => x.Context.Message.Id == result.Id,
+																CancellationToken.None);
+
+		message.Should().NotBeNull();
+
+		var (msgId, msgTitle, msgDescription, msgPrice, msgCompanyId) = message.Context.Message;
+
+		msgId.Should().Be(result.Id);
+		msgTitle.Should().Be(dto.Title);
+		msgDescription.Should().Be(dto.Description);
+		msgCompanyId.Should().Be(dto.CompanyId);
+		msgPrice.Should().Be(dto.Price);
 #endif
 #if (workerService)
 
 		var consumerHarness = serviceTestHarness.GetConsumerHarness<OnProductCreatedThenLongRunningProcess>();
-		(await consumerHarness.Consumed.SelectAsync<ProductCreated>().AnyAsync())
+		(await consumerHarness.Consumed.SelectAsync<ProductCreated>().AnyAsync(c => c.Context.Message.Id == result.Id))
 			.Should()
 			.BeTrue();
 #endif
@@ -370,7 +392,7 @@ public class ProductsTests : IntegrationTest
 #if (auth)
 		await SetupAccessToken();
 #endif
-		var dbContext = Fixture.GetDbContext();
+		var dbContext = Fixture.GetDbContext(Fixture.WebAppFactory.Services);
 		var productId = Guid.Parse("FA934D1C-1E6D-4DD4-ADC2-08DC18C8810C");
 		var productPictures = await dbContext.Set<Product>()
 											 .AsNoTracking()
@@ -389,13 +411,15 @@ public class ProductsTests : IntegrationTest
 										   [.. productPictures],
 										   newPictureId);
 
-		var response = await CreateRequest(ApiRoutes.Products.Put(productId)).PutJsonAsync(dto);
+		using var client = GetClient(Fixture.WebAppFactory);
+		var response = await client.Request(ApiRoutes.Products.Put(productId))
+								   .PutJsonAsync(dto);
 
 		response.StatusCode
 				.Should()
 				.Be((int)HttpStatusCode.NoContent);
 
-		var product = await Fixture.GetDbContext()
+		var product = await Fixture.GetDbContext(Fixture.WebAppFactory.Services)
 								   .Set<Product>()
 								   .Include(x => x.Pictures)
 								   .Include(x => x.DefaultPicture)
@@ -462,13 +486,15 @@ public class ProductsTests : IntegrationTest
 		await SetupAccessToken();
 #endif
 		var productId = Guid.Parse("FA934D1C-1E6D-4DD4-ADC2-08DC18C8810C");
-		var response = await CreateRequest(ApiRoutes.Products.Delete(productId)).DeleteAsync();
+		using var client = GetClient(Fixture.WebAppFactory);
+		var response = await client.Request(ApiRoutes.Products.Delete(productId))
+								   .DeleteAsync();
 
 		response.StatusCode
 				.Should()
 				.Be((int)HttpStatusCode.OK);
 
-		var products = await Fixture.GetDbContext()
+		var products = await Fixture.GetDbContext(Fixture.WebAppFactory.Services)
 									.Set<Product>()
 									.ToListAsync();
 
@@ -481,8 +507,8 @@ public class ProductsTests : IntegrationTest
 	public override async Task DisposeAsync()
 	{
 		var container = GetBlobContainerClient();
-		await container.GetBlobs()
-					   .ParallelForEachAsync(blob => container.DeleteBlobAsync(blob.Name));
+		await Parallel.ForEachAsync(container.GetBlobs(),
+									async (blob, ct) => await container.DeleteBlobAsync(blob.Name, cancellationToken: ct));
 
 		await base.DisposeAsync();
 	}

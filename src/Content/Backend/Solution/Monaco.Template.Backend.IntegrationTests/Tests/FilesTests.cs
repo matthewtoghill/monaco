@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using File = Monaco.Template.Backend.Domain.Model.Entities.File;
 
-
 namespace Monaco.Template.Backend.IntegrationTests.Tests;
 
 [ExcludeFromCodeCoverage]
@@ -16,8 +15,8 @@ public class FilesTests : IntegrationTest
 {
 	public FilesTests(AppFixture fixture) : base(fixture)
 	{ }
-
 #if (apiService && auth)
+
 	protected override bool RequiresAuthentication => true;
 #endif
 
@@ -38,16 +37,18 @@ public class FilesTests : IntegrationTest
 		const string file = $@"Imports\Pictures\{fileName}";
 		const string contentType = "image/png";
 
-		var response = await CreateRequest(ApiRoutes.Files.Post()).PostMultipartAsync(b => b.AddFile("file",
-																									 System.IO.File.OpenRead(file),
-																									 fileName, contentType));
+		using var client = GetClient(Fixture.WebAppFactory);
+		var response = await client.Request(ApiRoutes.Files.Post())
+								   .PostMultipartAsync(b => b.AddFile("file",
+																	  System.IO.File.OpenRead(file),
+																	  fileName, contentType));
 		var uploadDate = DateTime.UtcNow;
 
 		response.StatusCode
 				.Should()
 				.Be((int)HttpStatusCode.Created);
 
-		var files = await Fixture.GetDbContext()
+		var files = await Fixture.GetDbContext(Fixture.WebAppFactory.Services)
 								 .Set<File>()
 								 .AsNoTracking()
 								 .ToListAsync();

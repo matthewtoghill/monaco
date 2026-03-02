@@ -32,14 +32,16 @@ public class CountriesTests : IntegrationTest
 	[Fact(DisplayName = "Get Countries succeeds")]
 	public async Task GetCountriesSucceeds()
 	{
-		var response = await CreateRequest(ApiRoutes.Countries.Query()).GetAsync();
+		using var client = GetClient(Fixture.WebAppFactory);
+		var response = await client.Request(ApiRoutes.Countries.Query())
+								   .GetAsync();
 
 		response.StatusCode
 				.Should()
 				.Be((int)HttpStatusCode.OK);
 
 		var result = await response.GetJsonAsync<CountryDto[]>();
-		var countriesCount = await Fixture.GetDbContext()
+		var countriesCount = await Fixture.GetDbContext(Fixture.WebAppFactory.Services)
 										  .Set<Country>()
 										  .CountAsync();
 
@@ -54,14 +56,16 @@ public class CountriesTests : IntegrationTest
 	{
 		var countryId = Guid.Parse("534A826B-70EF-2128-1A4C-52E23B7D5447");
 
-		var response = await CreateRequest(ApiRoutes.Countries.Get(countryId)).GetAsync();
+		using var client = GetClient(Fixture.WebAppFactory);
+		var response = await client.Request(ApiRoutes.Countries.Get(countryId))
+								   .GetAsync();
 
 		response.StatusCode
 				.Should()
 				.Be((int)HttpStatusCode.OK);
 
 		var result = await response.GetJsonAsync<CountryDto>();
-		var country = await Fixture.GetDbContext()
+		var country = await Fixture.GetDbContext(Fixture.WebAppFactory.Services)
 								   .Set<Country>()
 								   .SingleAsync(c => c.Id == countryId);
 

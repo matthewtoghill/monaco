@@ -46,7 +46,9 @@ public class CompaniesTests : IntegrationTest
 											   int? limit,
 											   int expectedItemsCount)
 	{
-		var response = await CreateRequest(ApiRoutes.Companies.Query(expandCountry, offset, limit)).GetAsync();
+		using var client = GetClient(Fixture.WebAppFactory);
+		var response = await client.Request(ApiRoutes.Companies.Query(expandCountry, offset, limit))
+								   .GetAsync();
 
 		response.StatusCode
 				.Should()
@@ -84,14 +86,16 @@ public class CompaniesTests : IntegrationTest
 	{
 		var companyId = Guid.Parse("8CEFE8FA-F747-4A3A-D8C9-08DC18C76CDC");
 
-		var response = await CreateRequest(ApiRoutes.Companies.Get(companyId)).GetAsync();
+		using var client = GetClient(Fixture.WebAppFactory);
+		var response = await client.Request(ApiRoutes.Companies.Get(companyId))
+								   .GetAsync();
 
 		response.StatusCode
 				.Should()
 				.Be((int)HttpStatusCode.OK);
 
 		var result = await response.GetJsonAsync<CompanyDto>();
-		var company = await Fixture.GetDbContext()
+		var company = await Fixture.GetDbContext(Fixture.WebAppFactory.Services)
 								   .Set<Company>()
 								   .SingleAsync(c => c.Id == companyId);
 
@@ -142,7 +146,10 @@ public class CompaniesTests : IntegrationTest
 										   county,
 										   postCode[..Address.PostCodeLength],
 										   spainId);
-		var response = await CreateRequest(ApiRoutes.Companies.Post()).PostJsonAsync(dto);
+
+		using var client = GetClient(Fixture.WebAppFactory);
+		var response = await client.Request(ApiRoutes.Companies.Post())
+								   .PostJsonAsync(dto);
 
 		response.StatusCode
 				.Should()
@@ -159,7 +166,7 @@ public class CompaniesTests : IntegrationTest
 				.Should()
 				.Contain(("Location", ApiRoutes.Companies.Get(result.Id).ToString()));
 
-		var companies = await Fixture.GetDbContext()
+		var companies = await Fixture.GetDbContext(Fixture.WebAppFactory.Services)
 									 .Set<Company>()
 									 .ToListAsync();
 		companies.Should()
@@ -214,13 +221,16 @@ public class CompaniesTests : IntegrationTest
 										   county,
 										   postCode[..Address.PostCodeLength],
 										   countryId);
-		var response = await CreateRequest(ApiRoutes.Companies.Put(companyId)).PutJsonAsync(dto);
+
+		using var client = GetClient(Fixture.WebAppFactory);
+		var response = await client.Request(ApiRoutes.Companies.Put(companyId))
+								   .PutJsonAsync(dto);
 
 		response.StatusCode
 				.Should()
 				.Be((int)HttpStatusCode.NoContent);
 
-		var company = await Fixture.GetDbContext()
+		var company = await Fixture.GetDbContext(Fixture.WebAppFactory.Services)
 								   .Set<Company>()
 								   .SingleOrDefaultAsync(c => c.Id == companyId);
 		company.Should()
@@ -255,13 +265,16 @@ public class CompaniesTests : IntegrationTest
 	public async Task DeleteExistingCompanySucceeds()
 	{
 		var companyId = Guid.Parse("EDEDB1E8-FD3A-4579-9EF8-A0BBEF2A6F95");
-		var response = await CreateRequest(ApiRoutes.Companies.Delete(companyId)).DeleteAsync();
+
+		using var client = GetClient(Fixture.WebAppFactory);
+		var response = await client.Request(ApiRoutes.Companies.Delete(companyId))
+								   .DeleteAsync();
 
 		response.StatusCode
 				.Should()
 				.Be((int)HttpStatusCode.OK);
 
-		var companies = await Fixture.GetDbContext()
+		var companies = await Fixture.GetDbContext(Fixture.WebAppFactory.Services)
 									 .Set<Company>()
 									 .ToListAsync();
 		companies.Should()

@@ -33,27 +33,32 @@ public sealed class ApiWebApplicationFactory : WebApplicationFactory<Api.Program
 									 ["MessageBus:RabbitMQ:Password"] = _fixture.RabbitMqPassword
 #endif
 								 })
-#if (massTransitIntegration)
-			   .UseSetting("https_port", "8080")
-			   .ConfigureServices((context, services) =>
-								  {
-									  var configuration = context.Configuration;
-									  services.AddMassTransitTestHarness(cfg =>
-																		 {
-																			 var rabbitMqConfig = configuration.GetSection("MessageBus:RabbitMQ");
-																			 if (rabbitMqConfig.Exists())
-																				 cfg.UsingRabbitMq((_, busCfg) => busCfg.Host(rabbitMqConfig["Host"],
-																															  ushort.Parse(rabbitMqConfig["Port"] ?? "5672"),
-																															  rabbitMqConfig["VHost"],
-																															  h =>
-																															  {
-																																  h.Username(rabbitMqConfig["Username"]!);
-																																  h.Password(rabbitMqConfig["Password"]!);
-																															  }));
-																		 });
-								  });
-#else
 			   .UseSetting("https_port", "8080");
-#endif
 
+	public WebApplicationFactory<Api.Program> GetCustomFactory(Action<IWebHostBuilder> configure) =>
+		WithWebHostBuilder(configure);
 }
+#if (massTransitIntegration)
+
+public static class WebAppFactoryExtensions
+{
+	extension(IWebHostBuilder builder)
+	{
+		public IWebHostBuilder AddMassTransitTestHarnessForWebApp() =>
+			builder.ConfigureServices((context, services) =>
+										  services.AddMassTransitTestHarness(cfg =>
+																			 {
+																				 var rabbitMqConfig = context.Configuration.GetSection("MessageBus:RabbitMQ");
+																				 if (rabbitMqConfig.Exists())
+																					 cfg.UsingRabbitMq((_, busCfg) => busCfg.Host(rabbitMqConfig["Host"],
+																																  ushort.Parse(rabbitMqConfig["Port"] ?? "5672"),
+																																  rabbitMqConfig["VHost"],
+																																  h =>
+																																  {
+																																	  h.Username(rabbitMqConfig["Username"]!);
+																																	  h.Password(rabbitMqConfig["Password"]!);
+																																  }));
+																			 }));
+	}
+}
+#endif
