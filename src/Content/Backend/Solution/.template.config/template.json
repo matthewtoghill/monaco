@@ -172,7 +172,8 @@
 				"**/.vs/**/*",
 				"**/logs/**",
 				"**/TestResults/**",
-				"**/[Pp]ublish/**/*"
+				"**/[Pp]ublish/**/*",
+				"**/.idea/**/*"
 			],
 			"modifiers": [
 				{
