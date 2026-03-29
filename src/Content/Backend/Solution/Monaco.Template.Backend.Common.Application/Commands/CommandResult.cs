@@ -12,8 +12,8 @@ namespace Monaco.Template.Backend.Common.Application.Commands;
 /// <param name="ValidationResult">Indicates the result of the validation process.</param>
 /// <param name="ItemNotFound">Indicates whether the target item was not found.</param>
 /// <param name="Result">Indicates the result of the command execution.</param>
-public record CommandResult<T>(ValidationResult ValidationResult, bool ItemNotFound, T Result)
-	: CommandResult(ValidationResult, ItemNotFound)
+public record CommandResult<T>(ValidationResult ValidationResult, bool ItemNotFound, bool ConcurrencyConflict, T Result)
+	: CommandResult(ValidationResult, ItemNotFound, ConcurrencyConflict)
 {
 	/// <summary>
 	/// Creates a successful <see cref="CommandResult{T}"/> instance with the specified result.
@@ -21,14 +21,14 @@ public record CommandResult<T>(ValidationResult ValidationResult, bool ItemNotFo
 	/// <param name="result">The result value to associate with the successful command.</param>
 	/// <returns>A <see cref="CommandResult{T}"/> instance representing a successful operation with the specified result.</returns>
 	public static CommandResult<T> Success(T result) =>
-		new(new(), false, result);
+		new(new(), false, false, result);
 
 	/// <summary>
 	/// Creates a <see cref="CommandResult{T}"/> instance representing a "Not Found" result.
 	/// </summary>
 	/// <returns>A <see cref="CommandResult{T}"/> with a "Not Found" status and a default value of type <typeparamref name="T"/>.</returns>
 	public new static CommandResult<T?> NotFound() =>
-		new(new(), true, default);
+		new(new(), true, false, default);
 
 	/// <summary>
 	/// Creates a <see cref="CommandResult{T}"/> instance representing a failed validation.
@@ -37,7 +37,10 @@ public record CommandResult<T>(ValidationResult ValidationResult, bool ItemNotFo
 	/// <param name="result">The optional result object to include in the command result. Can be <see langword="null"/>.</param>
 	/// <returns>A <see cref="CommandResult{T}"/> with the validation failure details and the specified result.</returns>
 	public static CommandResult<T?> ValidationFailed(ValidationResult validationResult, T? result) =>
-		new(validationResult, false, result);
+		new(validationResult, false, false, result);
+
+	public new static CommandResult<T?> ConcurrencyConflicted() =>
+		new(new(), false, true, default);
 }
 
 /// <summary>
@@ -48,21 +51,21 @@ public record CommandResult<T>(ValidationResult ValidationResult, bool ItemNotFo
 /// cref="NotFound"/>, and <see cref="ValidationFailed"/> to create instances of this type.</remarks>
 /// <param name="ValidationResult">Indicates the result of the validation process.</param>
 /// <param name="ItemNotFound">Indicates whether the target item was not found.</param>
-public record CommandResult(ValidationResult ValidationResult, bool ItemNotFound)
+public record CommandResult(ValidationResult ValidationResult, bool ItemNotFound, bool ConcurrencyConflict)
 {
 	/// <summary>
 	/// Creates a <see cref="CommandResult"/> instance representing a successful operation.
 	/// </summary>
 	/// <returns>A <see cref="CommandResult"/> object with no errors and a success state.</returns>
 	public static CommandResult Success() =>
-		new(new(), false);
+		new(new(), false, false);
 
 	/// <summary>
 	/// Creates a <see cref="CommandResult"/> instance representing a "Not Found" result.
 	/// </summary>
 	/// <returns>A <see cref="CommandResult"/> with a "Not Found" status and an empty list of validation errors/>.</returns>
 	public static CommandResult NotFound() =>
-		new(new(), true);
+		new(new(), true, false);
 
 	/// <summary>
 	/// Creates a <see cref="CommandResult"/> instance representing a failed validation.
@@ -70,5 +73,12 @@ public record CommandResult(ValidationResult ValidationResult, bool ItemNotFound
 	/// <param name="validationResult">The result of the validation process, containing details about the validation errors.</param>
 	/// <returns>A <see cref="CommandResult"/> indicating the validation failure, with the provided <paramref name="validationResult"/>.</returns>
 	public static CommandResult ValidationFailed(ValidationResult validationResult) =>
-		new(validationResult, false);
+		new(validationResult, false, false);
+
+	/// <summary>
+	/// Creates a <see cref="CommandResult"/> instance representing a "Not Found" result.
+	/// </summary>
+	/// <returns></returns>
+	public static CommandResult ConcurrencyConflicted() =>
+		new(new(), false, true);
 }

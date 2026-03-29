@@ -23,6 +23,9 @@ internal sealed class ProductEntityConfiguration : IEntityTypeConfiguration<Prod
 			   .IsRequired()
 			   .HasPrecision(10, 2);
 
+		builder.Property(x => x.Version)
+			   .IsRowVersion();
+
 
 		builder.HasOne(x => x.DefaultPicture)
 			   .WithOne()

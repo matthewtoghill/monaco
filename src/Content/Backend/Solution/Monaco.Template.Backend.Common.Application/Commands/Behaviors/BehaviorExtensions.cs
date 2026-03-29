@@ -8,7 +8,7 @@ namespace Monaco.Template.Backend.Common.Application.Commands.Behaviors;
 public static class BehaviorExtensions
 {
 	private static readonly Type[]? CommandBaseDerivedTypes = null;
-	private static readonly Type[]? CommandBaseOfResultDerivedTypes = null;
+	private static readonly Type[]? IRequestDerivedTypes = null;
 
 	/// <param name="services">The <see cref="IServiceCollection"/> to which the validation behaviors will be added.</param>
 	extension(IServiceCollection services)
@@ -27,25 +27,25 @@ public static class BehaviorExtensions
 		/// <returns>The updated <see cref="IServiceCollection"/> with the registered validation behaviors.</returns>
 		public IServiceCollection RegisterCommandValidationBehaviors(Assembly assembly)
 		{
-			// Gets the CommandBase derived classes
-			var commandBaseTypes = GetCommandBaseDerivedTypes(assembly);
-			// And adds the corresponding scoped behaviors for all the detected commands (for both existance and validation checks)
-			commandBaseTypes.ForEach(t => services.AddScoped(typeof(IPipelineBehavior<,>).MakeGenericType(t, typeof(CommandResult)),
-															 typeof(CommandValidationExistsBehavior<>).MakeGenericType(t))
-												  .AddScoped(typeof(IPipelineBehavior<,>).MakeGenericType(t, typeof(CommandResult)),
-															 typeof(CommandValidationBehavior<>).MakeGenericType(t)));
-			// Gets the CommandBases<T> derived classes
-			var commandBaseResultTypes = GetCommandBaseOfResultDerivedTypes(assembly);
+			var allCommandTypes = GetCommandBaseDerivedTypes(assembly);
 
-			// And adds the corresponding scoped behavior for all the detected commands (only for validation checks)
-			commandBaseResultTypes.ForEach(t =>
-										   {
-											   var tResult = t.BaseType!.GenericTypeArguments.First();
-											   services.AddScoped(typeof(IPipelineBehavior<,>).MakeGenericType(t, typeof(CommandResult<>).MakeGenericType(tResult)),
-																  typeof(CommandValidationExistsBehavior<,>).MakeGenericType(t, tResult))
-													   .AddScoped(typeof(IPipelineBehavior<,>).MakeGenericType(t, typeof(CommandResult<>).MakeGenericType(tResult)),
-																  typeof(CommandValidationBehavior<,>).MakeGenericType(t, tResult));
-										   });
+			allCommandTypes.ForEach(t =>
+			{
+				if (t.BaseType == typeof(CommandBase))
+					services.AddScoped(typeof(IPipelineBehavior<,>).MakeGenericType(t, typeof(CommandResult)),
+									   typeof(CommandValidationExistsBehavior<>).MakeGenericType(t))
+							.AddScoped(typeof(IPipelineBehavior<,>).MakeGenericType(t, typeof(CommandResult)),
+									   typeof(CommandValidationBehavior<>).MakeGenericType(t));
+				else
+				{
+					var tResult = t.BaseType!.GenericTypeArguments.First();
+					services.AddScoped(typeof(IPipelineBehavior<,>).MakeGenericType(t, typeof(CommandResult<>).MakeGenericType(tResult)),
+									   typeof(CommandValidationExistsBehavior<,>).MakeGenericType(t, tResult))
+							.AddScoped(typeof(IPipelineBehavior<,>).MakeGenericType(t, typeof(CommandResult<>).MakeGenericType(tResult)),
+									   typeof(CommandValidationBehavior<,>).MakeGenericType(t, tResult));
+				}
+			});
+
 			return services;
 		}
 
@@ -59,21 +59,30 @@ public static class BehaviorExtensions
 		/// <returns>The updated <see cref="IServiceCollection"/> with the registered behaviors.</returns>
 		public IServiceCollection RegisterCommandConcurrencyExceptionBehaviors(Assembly assembly)
 		{
-			// Gets the CommandBase derived classes
-			var commandBaseTypes = GetCommandBaseDerivedTypes(assembly);
-			// And adds the corresponding scoped behaviors for all the detected commands
-			commandBaseTypes.ForEach(t => services.AddScoped(typeof(IPipelineBehavior<,>).MakeGenericType(t, typeof(CommandResult)),
-															 typeof(ConcurrencyExceptionBehavior<>).MakeGenericType(t)));
-			// Gets the CommandBases<T> derived classes
-			var commandBaseResultTypes = GetCommandBaseOfResultDerivedTypes(assembly);
+			var iRequestDerivedTypes = GetIRequestDerivedTypes(assembly);
 
-			// And adds the corresponding scoped behavior for all the detected commands
-			commandBaseResultTypes.ForEach(t =>
-										   {
-											   var tResult = t.BaseType!.GenericTypeArguments.First();
-											   services.AddScoped(typeof(IPipelineBehavior<,>).MakeGenericType(t, typeof(CommandResult<>).MakeGenericType(tResult)),
-																  typeof(ConcurrencyExceptionBehavior<,>).MakeGenericType(t, tResult));
-										   });
+			iRequestDerivedTypes.ForEach(t =>
+			{
+				var requestInterface = t.GetInterfaces()
+										.First(i => i.IsGenericType &&
+													i.GetGenericTypeDefinition() == typeof(IRequest<>) &&
+													(i.GenericTypeArguments[0] == typeof(CommandResult) ||
+													 (i.GenericTypeArguments[0].IsGenericType &&
+													  i.GenericTypeArguments[0].GetGenericTypeDefinition() == typeof(CommandResult<>))));
+
+				var responseType = requestInterface.GenericTypeArguments[0];
+
+				if (responseType == typeof(CommandResult))
+					services.AddScoped(typeof(IPipelineBehavior<,>).MakeGenericType(t, typeof(CommandResult)),
+									   typeof(ConcurrencyExceptionBehavior<>).MakeGenericType(t));
+				else
+				{
+					var tResult = responseType.GenericTypeArguments[0];
+					services.AddScoped(typeof(IPipelineBehavior<,>).MakeGenericType(t, typeof(CommandResult<>).MakeGenericType(tResult)),
+									   typeof(ConcurrencyExceptionBehavior<,>).MakeGenericType(t, tResult));
+				}
+			});
+
 			return services;
 		}
 	}
@@ -81,13 +90,20 @@ public static class BehaviorExtensions
 
 	private static Type[] GetCommandBaseDerivedTypes(Assembly assembly) =>
 		CommandBaseDerivedTypes ??
-		[.. assembly.GetTypes().Where(x => x.BaseType == typeof(CommandBase))];
-
-	private static Type[] GetCommandBaseOfResultDerivedTypes(Assembly assembly) =>
-		CommandBaseOfResultDerivedTypes ??
 		[
-			.. assembly.GetTypes()
-					   .Where(x => (x.BaseType?.IsGenericType ?? false) &&
-								   x.BaseType?.GetGenericTypeDefinition() == typeof(CommandBase<>))
+			.. assembly.GetTypes().Where(x => x.BaseType == typeof(CommandBase) ||
+											  (x.BaseType?.IsGenericType == true &&
+											   x.BaseType?.GetGenericTypeDefinition() == typeof(CommandBase<>)))
+		];
+
+	private static Type[] GetIRequestDerivedTypes(Assembly assembly) =>
+		IRequestDerivedTypes ??
+		[
+			.. assembly.GetTypes().Where(x => x.GetInterfaces().Any(i =>
+																		i.IsGenericType &&
+																		i.GetGenericTypeDefinition() == typeof(IRequest<>) &&
+																		(i.GenericTypeArguments[0] == typeof(CommandResult) ||
+																		 (i.GenericTypeArguments[0].IsGenericType &&
+																		  i.GenericTypeArguments[0].GetGenericTypeDefinition() == typeof(CommandResult<>)))))
 		];
 }

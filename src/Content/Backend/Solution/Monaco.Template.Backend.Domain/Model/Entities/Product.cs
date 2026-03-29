@@ -36,6 +36,7 @@ public class Product : AggregateRoot
 	public string Title { get; private set; } = null!;
 	public string Description { get; private set; } = null!;
 	public decimal Price { get; private set; }
+	public byte[] Version { get; } = null!;
 
 	public virtual Guid CompanyId { get; private set; }
 	public virtual Company Company { get; private set; } = null!;

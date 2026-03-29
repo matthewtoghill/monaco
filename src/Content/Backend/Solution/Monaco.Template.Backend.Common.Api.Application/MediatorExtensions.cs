@@ -20,13 +20,8 @@ public static class MediatorExtensions
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		public async Task<Results<Ok<TResult>, NotFound>> ExecuteQueryAsync<TResult>(QueryBase<TResult> query,
-																					 CancellationToken cancellationToken = default)
-		{
-			var result = await sender.Send(query, cancellationToken);
-			return result is null
-					   ? TypedResults.NotFound()
-					   : TypedResults.Ok(result);
-		}
+																					 CancellationToken cancellationToken = default) =>
+			OkOrNotFound(await sender.Send(query, cancellationToken));
 
 		/// <summary>
 		/// Executes the paged query passed and returns the corresponding response that can be either Ok(result) or a NotFound() result depending on whether the returned result is null or not
@@ -36,13 +31,8 @@ public static class MediatorExtensions
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		public async Task<Results<Ok<Page<TResult>>, NotFound>> ExecuteQueryAsync<TResult>(QueryPagedBase<TResult> query,
-																						   CancellationToken cancellationToken = default)
-		{
-			var result = await sender.Send(query, cancellationToken);
-			return result is null
-					   ? TypedResults.NotFound()
-					   : TypedResults.Ok(result);
-		}
+																						   CancellationToken cancellationToken = default) =>
+			OkOrNotFound(await sender.Send(query, cancellationToken));
 
 		/// <summary>
 		/// Executes the query passed and returns the corresponding response that can be either Ok(result) or a NotFound() result depending on whether the returned item is null or not
@@ -52,13 +42,8 @@ public static class MediatorExtensions
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		public async Task<Results<Ok<TResult>, NotFound>> ExecuteQueryAsync<TResult>(QueryByIdBase<TResult> query,
-																					 CancellationToken cancellationToken = default)
-		{
-			var result = await sender.Send(query, cancellationToken);
-			return result is null
-					   ? TypedResults.NotFound()
-					   : TypedResults.Ok(result);
-		}
+																					 CancellationToken cancellationToken = default) =>
+			OkOrNotFound(await sender.Send(query, cancellationToken));
 
 		/// <summary>
 		/// Executes the query passed and returns the corresponding response that can be either Ok(result) or a NotFound() result depending on whether the returned item is null or not
@@ -69,13 +54,8 @@ public static class MediatorExtensions
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		public async Task<Results<Ok<TResult>, NotFound>> ExecuteQueryAsync<TResult, TKey>(QueryByKeyBase<TResult, TKey> query,
-																						   CancellationToken cancellationToken = default)
-		{
-			var item = await sender.Send(query, cancellationToken);
-			return item is null
-					   ? TypedResults.NotFound()
-					   : TypedResults.Ok(item);
-		}
+																						   CancellationToken cancellationToken = default) =>
+			OkOrNotFound(await sender.Send(query, cancellationToken));
 
 		/// <summary>
 		/// Executes the query passed and returns a FileStreamResult for allowing download of a file or a NotFound() result depending on whether the returned item is null or not
@@ -85,11 +65,8 @@ public static class MediatorExtensions
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		public async Task<Results<FileStreamHttpResult, NotFound>> ExecuteFileDownloadAsync<TResult>(QueryBase<TResult?> query,
-																									 CancellationToken cancellationToken = default) where TResult : FileDownloadDto
-		{
-			var item = await sender.Send(query, cancellationToken);
-			return GetFileDownload(item);
-		}
+																									 CancellationToken cancellationToken = default) where TResult : FileDownloadDto =>
+			GetFileDownload(await sender.Send(query, cancellationToken));
 
 		/// <summary>
 		/// Executes the query passed and returns a FileStreamResult for allowing download of a file or a NotFound() result depending on whether the returned item is null or not
@@ -99,112 +76,91 @@ public static class MediatorExtensions
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		public async Task<Results<FileStreamHttpResult, NotFound>> ExecuteFileDownloadAsync<TResult>(QueryByIdBase<TResult?> query,
-																									 CancellationToken cancellationToken = default) where TResult : FileDownloadDto
-		{
-			var item = await sender.Send(query, cancellationToken);
-			return GetFileDownload(item);
-		}
+																									 CancellationToken cancellationToken = default) where TResult : FileDownloadDto =>
+			GetFileDownload(await sender.Send(query, cancellationToken));
 
 		/// <summary>
-		/// Executes the command passed and returns the corresponding response that can be either <see cref="Created{TValue}"/> or a <see cref="NotFound"/> or a <see cref="ValidationProblem"/> depending on the validations and processing
+		/// Executes the command passed and returns the corresponding response that can be either <see cref="Created{TValue}"/>, a <see cref="NotFound"/>, a <see cref="ValidationProblem"/>, or a <see cref="Conflict"/> depending on the validations and processing.
 		/// </summary>
 		/// <param name="command"></param>
 		/// <param name="resultUri">The URI to include in the headers of the Created() response</param>
 		/// <param name="uriParams">The parameters (if any) to pass for concatenating into the resultUri</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		public async Task<Results<Created<CreatedResponse>, NotFound, ValidationProblem>> ExecuteCommandCreatedAsync(CommandBase<Guid> command,
-																													 string resultUri,
-																													 object[]? uriParams = null,
-																													 CancellationToken cancellationToken = default)
-		{
-			var result = await sender.Send(command, cancellationToken);
-			return result switch
-				   {
-					   { ItemNotFound: true } => TypedResults.NotFound(),
-					   { ValidationResult.IsValid: false } => TypedResults.ValidationProblem(result.ValidationResult.ToDictionary()),
-					   _ => TypedResults.Created(string.Format(resultUri, [.. uriParams ?? [], result.Result]),
-												 new CreatedResponse(result.Result))
-				   };
-		}
+		public async Task<Results<Created<CreatedResponse>, NotFound, ValidationProblem, Conflict>> ExecuteCommandCreatedAsync(CommandBase<Guid> command,
+																															   string resultUri,
+																															   object[]? uriParams = null,
+																															   CancellationToken cancellationToken = default) =>
+			await sender.ExecuteCommandAsync(command,
+											 result => TypedResults.Created(string.Format(resultUri, [.. uriParams ?? [], result]),
+																			new CreatedResponse(result)),
+											 cancellationToken);
 
 		/// <summary>
-		/// Executes the command passed and returns the corresponding response that can be either  <see cref="NoContent"/> or a <see cref="NotFound"/> or a <see cref="ValidationProblem"/> depending on the validations and processing
+		/// Executes the command passed and returns the corresponding response that can be either <see cref="NoContent"/>, a <see cref="NotFound"/>, a <see cref="ValidationProblem"/>, or a <see cref="Conflict"/> depending on the validations and processing.
 		/// </summary>
 		/// <param name="command"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		public async Task<Results<NoContent, NotFound, ValidationProblem>> ExecuteCommandNoContentAsync(CommandBase command,
-																										CancellationToken cancellationToken = default)
-		{
-			var result = await sender.Send(command, cancellationToken);
-			return result switch
-				   {
-					   { ItemNotFound: true } => TypedResults.NotFound(),
-					   { ValidationResult.IsValid: false } => TypedResults.ValidationProblem(result.ValidationResult.ToDictionary()),
-					   _ => TypedResults.NoContent()
-				   };
-		}
+		public async Task<Results<NoContent, NotFound, ValidationProblem, Conflict>> ExecuteCommandNoContentAsync(CommandBase command,
+																												  CancellationToken cancellationToken = default) =>
+			await sender.ExecuteCommandAsync(command, TypedResults.NoContent(), cancellationToken);
 
 		/// <summary>
-		/// Executes the command passed and returns the corresponding response that can be either <see cref="Ok"/> or a <see cref="NotFound"/> or a <see cref="ValidationProblem"/> depending on the validations and processing
+		/// Executes the command passed and returns the corresponding response that can be either <see cref="Ok"/>, a <see cref="NotFound"/>, a <see cref="ValidationProblem"/>, or a <see cref="Conflict"/> depending on the validations and processing.
 		/// </summary>
 		/// <param name="command"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		public async Task<Results<Ok, NotFound, ValidationProblem>> ExecuteCommandOkAsync(CommandBase command,
-																						  CancellationToken cancellationToken = default)
-		{
-			var result = await sender.Send(command, cancellationToken);
-			return result switch
-				   {
-					   { ItemNotFound: true } => TypedResults.NotFound(),
-					   { ValidationResult.IsValid: false } => TypedResults.ValidationProblem(result.ValidationResult.ToDictionary()),
-					   _ => TypedResults.Ok()
-				   };
-		}
+		public async Task<Results<Ok, NotFound, ValidationProblem, Conflict>> ExecuteCommandOkAsync(CommandBase command,
+																									CancellationToken cancellationToken = default) =>
+			await sender.ExecuteCommandAsync(command, TypedResults.Ok(), cancellationToken);
 
 		/// <summary>
-		/// Executes the command passed and returns the corresponding response that can be either <see cref="NotFound"/> or a <see cref="ValidationProblem"/> or a user-defined <see cref="IResult"/> depending on the validations and processing
+		/// Executes the command passed and returns the corresponding response that can be either a user-defined <see cref="IResult"/>, a <see cref="NotFound"/>, a <see cref="ValidationProblem"/>, or a <see cref="Conflict"/> depending on the validations and processing.
 		/// </summary>
-		/// <typeparam name="TResponse"></typeparam>
+		/// <typeparam name="TResponse">The type of the success response. Must implement <see cref="IResult"/>.</typeparam>
 		/// <param name="command"></param>
 		/// <param name="response"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		public async Task<Results<TResponse, NotFound, ValidationProblem>> ExecuteCommandAsync<TResponse>(CommandBase command,
-																										  TResponse response,
-																										  CancellationToken cancellationToken = default) where TResponse : IResult
+		public async Task<Results<TResponse, NotFound, ValidationProblem, Conflict>> ExecuteCommandAsync<TResponse>(CommandBase command,
+																													TResponse response,
+																													CancellationToken cancellationToken = default)
+			where TResponse : IResult
 		{
 			var result = await sender.Send(command, cancellationToken);
 			return result switch
-				   {
-					   { ItemNotFound: true } => TypedResults.NotFound(),
-					   { ValidationResult.IsValid: false } => TypedResults.ValidationProblem(result.ValidationResult.ToDictionary()),
-					   _ => response
-				   };
+			{
+				{ ItemNotFound: true } => TypedResults.NotFound(),
+				{ ValidationResult.IsValid: false } => TypedResults.ValidationProblem(result.ValidationResult.ToDictionary()),
+				{ ConcurrencyConflict: true } => TypedResults.Conflict(),
+				_ => response
+			};
 		}
 
 		/// <summary>
-		/// Executes the command passed and returns the corresponding response that can be either <see cref="NotFound"/> or a <see cref="ValidationProblem"/> or an <see cref="IResult"/> calculated based on a function, depending on the validations and processing
+		/// Executes the command passed and returns the corresponding response that can be either an <see cref="IResult"/> calculated based on a function, a <see cref="NotFound"/>, a <see cref="ValidationProblem"/>, or a <see cref="Conflict"/> depending on the validations and processing.
 		/// </summary>
-		/// <typeparam name="TResult">The type of the result returned by the command</typeparam>
-		/// <typeparam name="TResponse"></typeparam>
+		/// <typeparam name="TResult">The type of the result returned by the command.</typeparam>
+		/// <typeparam name="TResponse">The type of the success response. Must implement <see cref="IResult"/>.</typeparam>
 		/// <param name="command"></param>
 		/// <param name="func">A function to convert the result to the desired response type</param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		public async Task<Results<TResponse, NotFound, ValidationProblem>> ExecuteCommandAsync<TResult, TResponse>(CommandBase<TResult> command,
-																												   Func<TResult, TResponse> func,
-																												   CancellationToken cancellationToken = default) where TResponse : IResult
+		public async Task<Results<TResponse, NotFound, ValidationProblem, Conflict>> ExecuteCommandAsync<TResult, TResponse>(CommandBase<TResult> command,
+																															 Func<TResult, TResponse> func,
+																															 CancellationToken cancellationToken = default)
+			where TResponse : IResult
 		{
 			var result = await sender.Send(command, cancellationToken);
 			return result switch
-				   {
-					   { ItemNotFound: true } => TypedResults.NotFound(),
-					   { ValidationResult.IsValid: false } => TypedResults.ValidationProblem(result.ValidationResult.ToDictionary()),
-					   _ => func(result.Result)
-				   };
+			{
+				{ ItemNotFound: true } => TypedResults.NotFound(),
+				{ ValidationResult.IsValid: false } => TypedResults.ValidationProblem(result.ValidationResult.ToDictionary()),
+				{ ConcurrencyConflict: true } => TypedResults.Conflict(),
+				_ => func(result.Result)
+			};
 		}
 	}
 
@@ -214,4 +170,10 @@ public static class MediatorExtensions
 			: TypedResults.File(item.FileContent,
 								item.ContentType,
 								item.FileName);
+
+
+	private static Results<Ok<TResult>, NotFound> OkOrNotFound<TResult>(TResult? result) =>
+		result is null
+			? TypedResults.NotFound()
+			: TypedResults.Ok(result);
 }

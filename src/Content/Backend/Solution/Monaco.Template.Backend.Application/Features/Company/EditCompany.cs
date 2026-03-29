@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Monaco.Template.Backend.Application.Features.Company.Extensions;
 using Monaco.Template.Backend.Application.Persistence;
 using Monaco.Template.Backend.Common.Application.Commands;
+using Monaco.Template.Backend.Common.Application.Commands.Contracts;
 using Monaco.Template.Backend.Common.Application.Validators.Extensions;
 using Monaco.Template.Backend.Common.Infrastructure.Context.Extensions;
 
@@ -19,7 +20,7 @@ public sealed class EditCompany
 								 string? City,
 								 string? County,
 								 string? PostCode,
-								 Guid? CountryId) : CommandBase(Id);
+								 Guid? CountryId) : CommandBase(Id), IConcurrencyRetriable;
 
 	internal sealed class Validator : AbstractValidator<Command>
 	{

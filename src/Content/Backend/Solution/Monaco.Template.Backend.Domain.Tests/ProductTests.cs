@@ -45,6 +45,9 @@ public class ProductTests
 		sut.DefaultPicture
 		   .Should()
 		   .Be(pictures.First());
+		sut.Version
+		   .Should()
+		   .BeNull();
 	}
 
 	[Theory(DisplayName = "New product with empty title throws")]
@@ -166,6 +169,9 @@ public class ProductTests
 		sut.Price
 		   .Should()
 		   .Be(price);
+		sut.Version
+		   .Should()
+		   .BeNull();
 	}
 
 	[Theory(DisplayName = "Update product with empty name fails")]

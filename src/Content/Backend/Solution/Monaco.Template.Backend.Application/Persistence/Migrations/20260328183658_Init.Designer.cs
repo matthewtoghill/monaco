@@ -12,7 +12,7 @@ using Monaco.Template.Backend.Application.Persistence;
 namespace Monaco.Template.Backend.Application.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251220200916_Init")]
+    [Migration("20260328183658_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace Monaco.Template.Backend.Application.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.1")
+                .HasAnnotation("ProductVersion", "10.0.2")
                 .HasAnnotation("Proxies:ChangeTracking", false)
                 .HasAnnotation("Proxies:CheckEquality", false)
                 .HasAnnotation("Proxies:LazyLoading", true)
@@ -1258,7 +1258,7 @@ namespace Monaco.Template.Backend.Application.Persistence.Migrations
 
                     b.ToTable("File", (string)null);
 
-                    b.HasDiscriminator().IsComplete(true).HasValue("File");
+                    b.HasDiscriminator<string>("Discriminator").IsComplete(true).HasValue("File");
 
                     b.UseTphMappingStrategy();
                 });
@@ -1287,6 +1287,12 @@ namespace Monaco.Template.Backend.Application.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.HasKey("Id");
 
